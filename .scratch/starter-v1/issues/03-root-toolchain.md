@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] Root scripts exist for lint, typecheck, and test
-- [ ] Lint (Antfu ESLint) reports zero errors
-- [ ] Typecheck (strict TypeScript) reports zero errors
-- [ ] Test runner (Vitest at minimum) runs and passes, even if the suite is still a placeholder
-- [ ] No global installs; only repo-defined scripts and tools
+- [x] Root scripts exist for lint, typecheck, and test
+- [x] Lint (Antfu ESLint) reports zero errors
+- [x] Typecheck (strict TypeScript) reports zero errors
+- [x] Test runner (Vitest at minimum) runs and passes, even if the suite is still a placeholder
+- [x] No global installs; only repo-defined scripts and tools
