@@ -1,6 +1,7 @@
 # Workspace packages are the Nuxt Layers. pnpm 11 also reads settings from this file.
-# esbuild is allowed to run its build script; other deps stay ignored.
+# Only listed packages may run install scripts (pnpm 11 allowBuilds).
 packages:
   - 'layers/*'
-onlyBuiltDependencies:
-  - esbuild
+allowBuilds:
+  esbuild: true
+  vue-demi: true

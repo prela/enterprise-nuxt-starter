@@ -17,4 +17,16 @@ describe('public Nuxt Layer interface fence', () => {
     expect(result.errorCount).toBeGreaterThan(0)
     expect(result.messages.some(message => /Tier|deep import|Public Layer/i.test(message.message))).toBe(true)
   })
+
+  it('fails lint on a deep import of UI Layer Tiers', async () => {
+    process.env.CI = 'true'
+    const eslint = new ESLint({ cwd: repoRoot })
+    const [result] = await eslint.lintText(
+      `import DefaultLayout from '../../layers/ui/app/layouts/default.vue'\n`,
+      { filePath: `${repoRoot}/app/forbidden-ui-tier-import.ts` },
+    )
+
+    expect(result.errorCount).toBeGreaterThan(0)
+    expect(result.messages.some(message => /Tier|deep import|Public Layer/i.test(message.message))).toBe(true)
+  })
 })

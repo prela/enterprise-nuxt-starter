@@ -1,0 +1,16 @@
+{
+  "name": "@starter/ui",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "description": "UI Nuxt Layer: Nuxt UI chrome, color mode, and default/auth/error layouts for Playground and Product Hosts.",
+  "exports": {
+    ".": "./nuxt.config.ts"
+  },
+  "main": "./nuxt.config.ts",
+  "dependencies": {
+    "@nuxt/kit": "^4.5.2",
+    "@nuxt/ui": "^4.4.0",
+    "tailwindcss": "^4.1.0"
+  }
+}

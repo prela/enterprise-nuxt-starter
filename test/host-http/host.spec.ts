@@ -29,6 +29,39 @@ describe('host HTTP', async () => {
     expect(response.headers.get('cache-control') ?? '').toMatch(/no-store/i)
   })
 
+  it('home tells the visitor this is a Playground, not a Product', async () => {
+    const response = await fetch('/')
+    const html = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(html).toMatch(/Playground/)
+    expect(html).toMatch(/not a Product/)
+  })
+
+  it('home chrome is mobile-first, exposes a main landmark, skip link, and color-mode control', async () => {
+    const response = await fetch('/')
+    const html = await response.text()
+
+    expect(html).toMatch(/lang="en"/)
+    expect(html).toMatch(/Skip to main content/)
+    expect(html).toMatch(/id="main"/)
+    expect(html).toMatch(/<main\b/)
+    expect(html).toMatch(/Switch between light and dark mode/)
+    expect(html).toMatch(/name="viewport"/)
+  })
+
+  it('unknown routes render error chrome that still names the Playground', async () => {
+    // ofetch defaults to JSON; a visitor's browser asks for HTML.
+    const response = await fetch('/this-route-does-not-exist', { headers: { accept: 'text/html' } })
+    const html = await response.text()
+
+    expect(response.status).toBe(404)
+    expect(html).toMatch(/Playground/)
+    expect(html).toMatch(/<main\b/)
+    expect(html).toMatch(/Skip to main content/)
+    expect(html).toMatch(/Switch between light and dark mode/)
+  })
+
   it('sends baseline headers and CSP in report-only, not enforced', async () => {
     const response = await fetch('/')
     const csp = response.headers.get('content-security-policy')
