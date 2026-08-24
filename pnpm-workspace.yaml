@@ -1,2 +1,4 @@
-allowBuilds:
-  esbuild: set this to true or false
+# pnpm 11 reads settings from this file even when there are no workspace packages.
+# esbuild is allowed to run its build script; other deps stay ignored.
+onlyBuiltDependencies:
+  - esbuild
