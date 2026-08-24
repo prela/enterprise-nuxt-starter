@@ -4,7 +4,7 @@
 
 **Blocked by:** 04 Core Host — health, env, headers
 
-**Status:** claimed
+**Status:** resolved
 
 - [x] Host extends a UI Nuxt Layer with a documented Public Layer interface
 - [x] Home page states this is a Playground, not a Product
@@ -20,3 +20,9 @@
 - `GET /` states this is a Playground, not a Product. Layouts `default`, `auth`, and `error` live in the UI Layer with skip link, main landmark, and color-mode control.
 - Nuxt UI only (no shadcn-vue). `ui.fonts` is off so v1 does not grow a fonts programme.
 - Host HTTP tests cover home copy, chrome, and HTML 404. Lint fence covers UI Tier deep imports.
+
+## Answer
+
+UI Nuxt Layer `@starter/ui` ships default, auth, and error layouts. The Playground Host extends it; `GET /` states this is a Playground, not a Product. Error copy agrees with status: 404 is a missing page, other failures are a render error.
+
+Host HTTP asserts home copy, skip link, main landmark, `lang`, viewport, labeled color-mode control, and HTML 404 chrome. That seam proves chrome is present; it does not prove full WCAG 2.2 AA (contrast, keyboard, target size) or that color-mode toggling works on a phone. Those belong with Playground E2E. The `auth` layout exists for Identity screens; this work package does not add register/login pages.

@@ -7,8 +7,15 @@ useHead({
   title: 'Error',
 })
 
+// Heading and body must agree: a render failure is not a missing route.
+const isNotFound = computed(() => props.error.statusCode === 404)
 const heading = computed(() =>
-  props.error.statusCode === 404 ? 'Page not found' : 'Something went wrong',
+  isNotFound.value ? 'Page not found' : 'Something went wrong',
+)
+const body = computed(() =>
+  isNotFound.value
+    ? 'That page is not available.'
+    : 'The Playground could not render this page.',
 )
 </script>
 
@@ -19,7 +26,7 @@ const heading = computed(() =>
         {{ heading }}
       </h1>
       <p class="mt-4 max-w-prose">
-        That page is not available.
+        {{ body }}
       </p>
       <UButton class="mt-6" to="/">
         Back to home

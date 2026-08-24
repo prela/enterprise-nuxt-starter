@@ -1,3 +1,7 @@
+<script setup lang="ts">
+// Chrome only; Identity pages own the form in the slot.
+</script>
+
 <template>
   <UApp>
     <a

@@ -57,6 +57,8 @@ describe('host HTTP', async () => {
 
     expect(response.status).toBe(404)
     expect(html).toMatch(/Playground/)
+    expect(html).toMatch(/Page not found/)
+    expect(html).toMatch(/That page is not available/)
     expect(html).toMatch(/<main\b/)
     expect(html).toMatch(/Skip to main content/)
     expect(html).toMatch(/Switch between light and dark mode/)
