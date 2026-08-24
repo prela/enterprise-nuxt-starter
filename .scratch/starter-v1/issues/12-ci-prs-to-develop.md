@@ -2,7 +2,7 @@
 
 **What to build:** Every PR into `develop` runs lint, typecheck, Identity-port tests, and Playwright. A red slice cannot merge.
 
-**Blocked by:** 02 Private GitHub remote; 11 Log out
+**Blocked by:** 02 GitHub remote; 11 Log out
 
 **Status:** ready-for-agent
 
