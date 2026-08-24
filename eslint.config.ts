@@ -6,10 +6,7 @@ export default antfu({
   ignores: [
     '.nuxt/**',
     '.output/**',
-    'coverage/**',
     'dist/**',
-    'playwright-report/**',
-    'test-results/**',
     'pnpm-workspace.yaml',
     'pnpm-lock.yaml',
   ],

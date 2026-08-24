@@ -6,7 +6,7 @@
 
 **Status:** ready-for-agent
 
-- [x] Git is initialized with `develop` as the default branch and `main` present
-- [x] Ignore rules exclude dependencies, Nuxt build output, env files, and other generated artifacts
-- [x] Agents can create `feature/<id>-<slug>` branches from `develop`
-- [x] No commit lands directly on `main` as part of this ticket
+- [ ] Git is initialized with `develop` as the default branch and `main` present
+- [ ] Ignore rules exclude dependencies, Nuxt build output, env files, and other generated artifacts
+- [ ] Agents can create `feature/<id>-<slug>` branches from `develop`
+- [ ] No commit lands directly on `main` as part of this ticket
