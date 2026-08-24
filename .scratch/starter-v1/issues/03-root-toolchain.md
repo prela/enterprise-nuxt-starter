@@ -4,7 +4,7 @@
 
 **Blocked by:** 01 Init git
 
-**Status:** claimed
+**Status:** resolved
 
 - [x] Root scripts exist for lint, typecheck, and test
 - [x] Lint (Antfu ESLint) reports zero errors

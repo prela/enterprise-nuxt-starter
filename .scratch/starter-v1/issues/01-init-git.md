@@ -4,9 +4,16 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Git is initialized with `develop` as the default branch and `main` present
-- [ ] Ignore rules exclude dependencies, Nuxt build output, env files, and other generated artifacts
-- [ ] Agents can create `feature/<id>-<slug>` branches from `develop`
-- [ ] No commit lands directly on `main` as part of this ticket
+- [x] Git is initialized with `develop` as the default branch and `main` present
+- [x] Ignore rules exclude dependencies, Nuxt build output, env files, and other generated artifacts
+- [x] Agents can create `feature/<id>-<slug>` branches from `develop`
+- [x] No commit lands directly on `main` as part of this ticket
+
+## Comments
+
+- Init commit is `1980501` (`chore: initialize git with develop as the default branch.`). GitHub default branch is `develop`.
+- `main` exists and still points at that init commit; later work landed via PRs into `develop` only.
+- Ignore rules cover Nuxt output, `node_modules`, env files, coverage, Playwright artifacts, and `*.local`.
+- Follow-on branches `feature/02-private-github-remote` and `feature/03-root-toolchain` were created from `develop`.

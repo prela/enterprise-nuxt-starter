@@ -4,7 +4,7 @@
 
 **Blocked by:** 01 Init git
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] GitHub repository `enterprise-nuxt-starter` exists as origin (**public** so Free-plan branch protection can enforce)
 - [x] `develop` and `main` are protected; agents cannot push directly to either
