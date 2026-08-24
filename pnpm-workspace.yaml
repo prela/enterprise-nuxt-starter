@@ -1,4 +1,6 @@
-# pnpm 11 reads settings from this file even when there are no workspace packages.
+# Workspace packages are the Nuxt Layers. pnpm 11 also reads settings from this file.
 # esbuild is allowed to run its build script; other deps stay ignored.
+packages:
+  - 'layers/*'
 onlyBuiltDependencies:
   - esbuild

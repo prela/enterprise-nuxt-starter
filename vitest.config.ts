@@ -1,9 +1,15 @@
 import { defineConfig } from 'vitest/config'
 
-// Placeholder only: Identity-port and Host HTTP/UI tests land in later WPs.
-// passWithNoTests keeps `pnpm test` green without inventing a third seam.
 export default defineConfig({
   test: {
-    passWithNoTests: true,
+    // Host HTTP setup builds Nitro; keep the process on one file so ports do not collide.
+    fileParallelism: false,
+    include: ['test/**/*.spec.ts'],
+    testTimeout: 120_000,
+    hookTimeout: 180_000,
+    env: {
+      // Happy-path Host boot. The invalid-env case overrides this per startServer().
+      NUXT_PUBLIC_SITE_URL: 'http://127.0.0.1:3000',
+    },
   },
 })

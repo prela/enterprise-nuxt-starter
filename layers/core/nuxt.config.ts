@@ -1,0 +1,15 @@
+// Core Nuxt Layer defaults. Products extend this package; they do not deep-import Tiers.
+export default defineNuxtConfig({
+  compatibilityDate: '2025-07-15',
+  modules: ['nuxt-security'],
+  runtimeConfig: {
+    public: {
+      // Overridden by NUXT_PUBLIC_SITE_URL. Empty so a missing env cannot look valid.
+      siteUrl: '',
+    },
+  },
+  security: {
+    // Report-only first: Playground scripts must load while we observe violations.
+    contentSecurityPolicyReportOnly: true,
+  },
+})

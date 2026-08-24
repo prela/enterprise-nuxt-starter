@@ -12,4 +12,23 @@ export default antfu(
       'pnpm/yaml-enforce-settings': 'off',
     },
   },
+  {
+    // Anyone outside Core (Host, later Nuxt Layers) may extend Core; they may not import its Tiers.
+    files: ['**/*.{js,ts,vue}'],
+    ignores: ['layers/core/**'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          {
+            group: [
+              '**/layers/core/**',
+              '@starter/core/*',
+              '@starter/core/**',
+            ],
+            message: 'Deep imports of another Nuxt Layer’s Tiers are forbidden. Use the Public Layer interface.',
+          },
+        ],
+      }],
+    },
+  },
 )
