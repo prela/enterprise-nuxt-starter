@@ -1,0 +1,15 @@
+{
+  "name": "@starter/core",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Core Nuxt Layer: shared Host defaults, health/readiness, env validation, and baseline security headers.",
+  "exports": {
+    ".": "./nuxt.config.ts"
+  },
+  "main": "./nuxt.config.ts",
+  "dependencies": {
+    "nuxt-security": "^2.6.0",
+    "zod": "^4.4.3"
+  }
+}

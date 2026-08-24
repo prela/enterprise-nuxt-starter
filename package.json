@@ -13,12 +13,14 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@starter/core": "workspace:*",
     "nuxt": "^4.5.2",
     "vue": "^3.5.41",
     "vue-router": "^5.2.0"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^9.3.0",
+    "@nuxt/test-utils": "^4.1.0",
     "eslint": "^10.9.0",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11",
