@@ -1,75 +1,36 @@
-# Nuxt Minimal Starter
+# Enterprise Nuxt Starter
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Playground Host at the repository root. It `extends` the Core and UI Nuxt Layers. Identity lands in a later work package.
 
-## Setup
+## Local topology (Compose)
 
-Make sure to install dependencies:
+One command boots the Playground and PostgreSQL together. Copy `.env.example` to `.env` first — `.env` is gitignored and must not be committed.
 
 ```bash
-# npm
-npm install
+cp .env.example .env
+docker compose up --build
+```
 
-# pnpm
+- `GET /health` — process is up (`Cache-Control: no-store`)
+- `GET /ready` — `200` when PostgreSQL is up, `503` when it is down (`Cache-Control: no-store`)
+
+Persistence is PostgreSQL via Drizzle (ADR-0003). Identity later attaches schema to this engine. MySQL is not used.
+
+To run the Host with `pnpm dev` against the same Postgres:
+
+```bash
+docker compose up postgres
 pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
-npm run dev
-
-# pnpm
 pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
+`pnpm dev` uses `NUXT_DATABASE_URL` from `.env` (localhost). The Playground Compose service uses the `postgres` hostname on the Compose network. `.env` also documents `DATABASE_URL` as the same URL for Drizzle when Identity attaches.
 
-Build the application for production:
+## Scripts
 
 ```bash
-# npm
-npm run build
-
-# pnpm
+pnpm lint
+pnpm typecheck
+pnpm test
 pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
 ```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.

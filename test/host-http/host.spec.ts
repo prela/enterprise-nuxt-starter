@@ -1,4 +1,6 @@
 import { fileURLToPath } from 'node:url'
+import { PGlite } from '@electric-sql/pglite'
+import { PGLiteSocketServer } from '@electric-sql/pglite-socket'
 import { fetch, getServerLogs, setup, startServer, stopServer } from '@nuxt/test-utils/e2e'
 import { describe, expect, it } from 'vitest'
 
@@ -21,10 +23,10 @@ describe('host HTTP', async () => {
     expect(response.headers.get('cache-control') ?? '').toMatch(/no-store/i)
   })
 
-  it('readiness returns success only when the process can serve, and must not be cached', async () => {
+  it('readiness fails and must not be cached when PostgreSQL is down', async () => {
     const response = await fetch('/ready')
 
-    expect(response.status).toBe(200)
+    expect(response.status).toBe(503)
     expect(response.headers.get('content-type') ?? '').toMatch(/json/i)
     expect(response.headers.get('cache-control') ?? '').toMatch(/no-store/i)
   })
@@ -78,6 +80,37 @@ describe('host HTTP', async () => {
     expect(csp).toBeNull()
   })
 
+  it('readiness succeeds and must not be cached when PostgreSQL is up', async () => {
+    // PostgreSQL-wire listener so /ready is observed at the Host HTTP seam without Docker.
+    const postgres = new PGlite()
+    const postgresWire = new PGLiteSocketServer({
+      db: postgres,
+      host: '127.0.0.1',
+      port: 55432,
+    })
+    await postgresWire.start()
+
+    try {
+      await stopServer()
+      await startServer({
+        env: {
+          NUXT_PUBLIC_SITE_URL: 'http://127.0.0.1:3000',
+          NUXT_DATABASE_URL: 'postgresql://postgres:postgres@127.0.0.1:55432/postgres',
+        },
+      })
+
+      const response = await fetch('/ready')
+
+      expect(response.status).toBe(200)
+      expect(response.headers.get('content-type') ?? '').toMatch(/json/i)
+      expect(response.headers.get('cache-control') ?? '').toMatch(/no-store/i)
+    }
+    finally {
+      await postgresWire.stop()
+      await postgres.close()
+    }
+  })
+
   it('refuses to start when required env is missing or invalid, with a Zod failure', async () => {
     await stopServer()
 
@@ -85,6 +118,7 @@ describe('host HTTP', async () => {
       startServer({
         env: {
           NUXT_PUBLIC_SITE_URL: '',
+          NUXT_DATABASE_URL: 'postgresql://playground:playground@127.0.0.1:59999/playground',
         },
       }),
     ).rejects.toThrow()
@@ -94,10 +128,35 @@ describe('host HTTP', async () => {
       startServer({
         env: {
           NUXT_PUBLIC_SITE_URL: 'not-a-url',
+          NUXT_DATABASE_URL: 'postgresql://playground:playground@127.0.0.1:59999/playground',
         },
       }),
     ).rejects.toThrow()
     // Startup is the seam: the process must surface Zod, not a generic crash.
     expect(getServerLogs().join('\n')).toMatch(/ZodError|siteUrl|Invalid URL/i)
+  })
+
+  it('refuses to start when NUXT_DATABASE_URL is missing or not PostgreSQL', async () => {
+    await stopServer()
+
+    await expect(
+      startServer({
+        env: {
+          NUXT_PUBLIC_SITE_URL: 'http://127.0.0.1:3000',
+          NUXT_DATABASE_URL: '',
+        },
+      }),
+    ).rejects.toThrow()
+    expect(getServerLogs().join('\n')).toMatch(/ZodError|databaseUrl|NUXT_DATABASE_URL/i)
+
+    await expect(
+      startServer({
+        env: {
+          NUXT_PUBLIC_SITE_URL: 'http://127.0.0.1:3000',
+          NUXT_DATABASE_URL: 'mysql://playground:playground@127.0.0.1:3306/playground',
+        },
+      }),
+    ).rejects.toThrow()
+    expect(getServerLogs().join('\n')).toMatch(/ZodError|databaseUrl|PostgreSQL/i)
   })
 })

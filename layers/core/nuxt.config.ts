@@ -3,6 +3,8 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   modules: ['nuxt-security'],
   runtimeConfig: {
+    // Overridden by NUXT_DATABASE_URL at runtime.
+    databaseUrl: '',
     public: {
       // Overridden by NUXT_PUBLIC_SITE_URL. Empty so a missing env cannot look valid.
       siteUrl: '',
