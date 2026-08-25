@@ -10,6 +10,8 @@ export default defineConfig({
     env: {
       // Happy-path Host boot. The invalid-env case overrides this per startServer().
       NUXT_PUBLIC_SITE_URL: 'http://127.0.0.1:3000',
+      // Closed port: default Host HTTP tests observe "PostgreSQL is down" without Docker.
+      NUXT_DATABASE_URL: 'postgresql://playground:playground@127.0.0.1:59999/playground',
     },
   },
 })

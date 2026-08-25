@@ -21,6 +21,8 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^9.3.0",
+    "@electric-sql/pglite": "^0.5.7",
+    "@electric-sql/pglite-socket": "^0.2.10",
     "@nuxt/test-utils": "^4.1.0",
     "eslint": "^10.9.0",
     "typescript": "^5.9.3",

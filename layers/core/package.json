@@ -3,13 +3,15 @@
   "type": "module",
   "version": "0.0.0",
   "private": true,
-  "description": "Core Nuxt Layer: shared Host defaults, health/readiness, env validation, and baseline security headers.",
+  "description": "Core Nuxt Layer: shared Host defaults, health/readiness (PostgreSQL via Drizzle), env validation, and baseline security headers.",
   "exports": {
     ".": "./nuxt.config.ts"
   },
   "main": "./nuxt.config.ts",
   "dependencies": {
+    "drizzle-orm": "^0.45.2",
     "nuxt-security": "^2.6.0",
+    "postgres": "^3.4.9",
     "zod": "^4.4.3"
   }
 }
