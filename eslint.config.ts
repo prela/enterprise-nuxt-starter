@@ -13,9 +13,47 @@ export default antfu(
     },
   },
   {
-    // Anyone outside Core (Host, later Nuxt Layers) may extend Core; they may not import its Tiers.
+    // Host and other Layers may extend Core/UI; they may not import those Layers' Tiers.
     files: ['**/*.{js,ts,vue}'],
-    ignores: ['layers/core/**'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          {
+            group: [
+              '**/layers/core/**',
+              '@starter/core/*',
+              '@starter/core/**',
+              '**/layers/ui/**',
+              '@starter/ui/*',
+              '@starter/ui/**',
+            ],
+            message: 'Deep imports of another Nuxt Layer’s Tiers are forbidden. Use the Public Layer interface.',
+          },
+        ],
+      }],
+    },
+  },
+  {
+    // Core Tiers may import within Core; they still must not reach into UI.
+    files: ['layers/core/**/*.{js,ts,vue}'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          {
+            group: [
+              '**/layers/ui/**',
+              '@starter/ui/*',
+              '@starter/ui/**',
+            ],
+            message: 'Deep imports of another Nuxt Layer’s Tiers are forbidden. Use the Public Layer interface.',
+          },
+        ],
+      }],
+    },
+  },
+  {
+    // UI Tiers may import within UI; they still must not reach into Core.
+    files: ['layers/ui/**/*.{js,ts,vue}'],
     rules: {
       'no-restricted-imports': ['error', {
         patterns: [
