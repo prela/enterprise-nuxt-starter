@@ -4,4 +4,7 @@ packages:
   - 'layers/*'
 allowBuilds:
   esbuild: true
+  # Playwright's postinstall only registers the lockfile package; browsers are
+  # installed later via `pnpm exec playwright install` (CI and local E2E).
+  playwright: true
   vue-demi: true

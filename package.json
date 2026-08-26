@@ -10,7 +10,8 @@
     "postinstall": "nuxt prepare",
     "lint": "CI=true eslint .",
     "typecheck": "nuxt typecheck",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@starter/core": "workspace:*",
@@ -25,6 +26,7 @@
     "@electric-sql/pglite": "^0.5.7",
     "@electric-sql/pglite-socket": "^0.2.10",
     "@nuxt/test-utils": "^4.1.0",
+    "@playwright/test": "^1.62.1",
     "eslint": "^10.9.0",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11",

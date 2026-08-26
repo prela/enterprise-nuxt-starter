@@ -1,0 +1,50 @@
+# PRs into develop must stay green: lint, typecheck, Identity-port/Host HTTP tests,
+# and Playwright at the Host HTTP/UI seam. A red slice cannot merge.
+
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # Browsers are installed from the lockfile package below, not during pnpm install.
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          # Same pnpm as the Playground Dockerfile so CI and Compose do not drift.
+          version: 11.18.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install lockfile dependencies
+        run: pnpm install --frozen-lockfile
+
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+
+      - name: Install Playwright Chromium
+        # Uses the @playwright/test version from the lockfile, then OS libs the runner needs.
+        run: pnpm exec playwright install --with-deps chromium
+
+      - run: pnpm test:e2e
