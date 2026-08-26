@@ -19,12 +19,34 @@ function emptyCoolifySameNameMappings(yaml: string): string {
   )
 }
 
+/** Postgres service only — playground interpolates the same names in DATABASE_URL. */
+function postgresService(yaml: string): string {
+  const start = yaml.indexOf('\n  postgres:\n')
+  const next = yaml.indexOf('\n  playground:\n')
+  return start === -1 || next === -1 ? '' : yaml.slice(start, next)
+}
+
 describe('coolify preview postgres', () => {
   it('still supplies POSTGRES_PASSWORD after Coolify empties same-name mappings', () => {
     const after = emptyCoolifySameNameMappings(compose)
     expect(after).not.toMatch(/^\s+POSTGRES_PASSWORD:\s*\$\{POSTGRES_PASSWORD\}\s*$/m)
     expect(after).toMatch(/env_file:/)
     expect(after).not.toMatch(/^\s+POSTGRES_PASSWORD:\s*$/m)
+  })
+
+  it('lists POSTGRES credentials as name-only env keys so Coolify injects them onto postgres', () => {
+    // Coolify 4.3.11 only puts UI secrets on a compose service when they appear
+    // under that service's environment: (Show deployable compose had none).
+    // env_file: .env does not carry POSTGRES_PASSWORD, so the official image
+    // exits: "Database is uninitialized and superuser password is not specified."
+    // Name-only list items (same as SERVICE_URL_PLAYGROUND_3000) let Coolify
+    // inject. KEY: ${KEY} is #9136 and becomes empty.
+    const postgres = postgresService(compose)
+    expect(postgres).toMatch(/^\s+- POSTGRES_USER\s*$/m)
+    expect(postgres).toMatch(/^\s+- POSTGRES_PASSWORD\s*$/m)
+    expect(postgres).toMatch(/^\s+- POSTGRES_DB\s*$/m)
+    expect(postgres).not.toMatch(/^\s+POSTGRES_(?:USER|PASSWORD|DB):\s*\$\{/m)
+    expect(postgres).not.toMatch(/^\s+- POSTGRES_(?:USER|PASSWORD|DB)=\$\{/m)
   })
 
   it('does not wait on postgres health so Coolify up -d can finish', () => {
