@@ -1,5 +1,6 @@
 import type { H3Event } from 'h3'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
+import { appendResponseHeader } from 'h3'
 import { z } from 'zod'
 import { createIdentityAuth } from '#layers/identity/infrastructure/auth'
 import { createBetterAuthIdentity } from '#layers/identity/infrastructure/better-auth-identity'
@@ -63,4 +64,24 @@ export async function identityFromEvent(event: H3Event) {
     ensureReady: () => ensureMigrated(parsed.data.databaseUrl, parsed.data.identityMigrationsFolder),
   })
   return { identity, cookieHeaders }
+}
+
+export function sessionTokenFromEvent(event: H3Event): string | null {
+  return getCookie(event, 'better-auth.session_token') ?? null
+}
+
+export async function currentPrincipalFromEvent(event: H3Event) {
+  const session = sessionTokenFromEvent(event)
+  if (!session)
+    return null
+  const { identity } = await identityFromEvent(event)
+  return identity.currentPrincipal(session)
+}
+
+export function appendIdentityCookies(event: H3Event, cookieHeaders: Headers) {
+  const cookies = typeof cookieHeaders.getSetCookie === 'function'
+    ? cookieHeaders.getSetCookie()
+    : [cookieHeaders.get('set-cookie') ?? ''].filter(Boolean)
+  for (const cookie of cookies)
+    appendResponseHeader(event, 'set-cookie', cookie)
 }
