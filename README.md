@@ -31,6 +31,12 @@ pnpm dev
 
 Merges to `develop` deploy the Playground on Coolify from `compose.preview.yaml` (Playground + PostgreSQL, no host-published ports). Secrets stay in Coolify; they are not in git.
 
+After that PR is merged, run the owner wizard (opens Coolify and GitHub, captures values, sets `PREVIEW_URL`):
+
+```bash
+./scripts/setup-coolify-preview.sh
+```
+
 1. In Coolify, create an application from this GitHub repository, branch `develop`, build pack **Docker Compose**, compose file `compose.preview.yaml`.
 2. Set the playground domain on port `3000` (HTTPS).
 3. In Coolify environment variables, set `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `NUXT_BETTER_AUTH_SECRET` (32+ characters), and `NUXT_PUBLIC_SITE_URL` to that HTTPS origin. Do not commit those values.
