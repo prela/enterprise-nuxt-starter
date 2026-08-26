@@ -27,14 +27,16 @@ describe('coolify preview postgres', () => {
     expect(after).not.toMatch(/^\s+POSTGRES_PASSWORD:\s*$/m)
   })
 
-  it('uses a pg_isready healthcheck with no $ for Coolify to interpolate', () => {
-    // `$$POSTGRES_USER` becomes `$playground` after Coolify substitutes
-    // `$POSTGRES_USER`, then Compose interpolates that as empty → `-U` with
-    // no user → healthcheck never succeeds → `depends_on: service_healthy` fails.
+  it('does not wait on postgres health so Coolify up -d can finish', () => {
+    // Coolify 4.3.11 injects `POSTGRES_USER: null` onto the postgres service
+    // when this file interpolates `${POSTGRES_USER}` there (seen in Show
+    // deployable compose). That unsets env_file's user, pg_isready never
+    // passes, and `service_healthy` fails the deploy. Playground `/ready`
+    // is the wait; compose only needs postgres to have started.
+    expect(compose).not.toMatch(/condition:\s*service_healthy/)
+    expect(compose).not.toMatch(/^\s+PGUSER:/m)
     const lines = compose.split('\n')
-    const cmdIndex = lines.findIndex(line => line.trim() === '- CMD-SHELL')
-    expect(lines[cmdIndex + 1]?.trim()).toBe('- pg_isready')
-    expect(compose).toMatch(/start_period:/)
-    expect(compose).toMatch(/^\s+PGUSER:\s*\$\{POSTGRES_USER\}\s*$/m)
+    const dependsIndex = lines.findIndex(line => line.trim() === 'depends_on:')
+    expect(lines[dependsIndex + 1]?.trim()).toBe('- postgres')
   })
 })

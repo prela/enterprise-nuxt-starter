@@ -9,26 +9,13 @@ services:
     hostname: postgres
     # Coolify writes UI env to `.env`. Load it instead of
     # `POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}` — Coolify has emptied those
-    # same-name mappings (coollabsio/coolify#9136), so Postgres exits before
-    # it can become healthy.
+    # same-name mappings (coollabsio/coolify#9136). Do not interpolate
+    # `${POSTGRES_USER}` on this service: Coolify then injects
+    # `POSTGRES_USER: null` and unsets the env_file value.
     env_file:
       - .env
-    environment:
-      # pg_isready reads PGUSER, not POSTGRES_USER. Different key than
-      # POSTGRES_USER so Coolify will not strip the value.
-      PGUSER: ${POSTGRES_USER}
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    healthcheck:
-      # No `$` in the command: Coolify interpolates `$VAR` in compose YAML,
-      # so `$$POSTGRES_USER` became an empty `-U` and the check never passed.
-      test:
-        - CMD-SHELL
-        - pg_isready
-      interval: 5s
-      timeout: 5s
-      retries: 10
-      start_period: 20s
 
   playground:
     build:
@@ -48,9 +35,12 @@ services:
       # Host inside the Compose network must be `postgres`, not localhost.
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       - NUXT_DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    # Coolify 4.3.11 injects `POSTGRES_USER: null` on postgres when that service
+    # interpolates `${POSTGRES_USER}` (Show deployable compose). That unsets
+    # env_file's user, so `pg_isready` never passes and `service_healthy` fails
+    # `docker compose up -d`. Playground `/ready` waits for Identity's engine.
     depends_on:
-      postgres:
-        condition: service_healthy
+      - postgres
 
 volumes:
   postgres-data:
