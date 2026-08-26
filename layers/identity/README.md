@@ -12,7 +12,7 @@ export default defineNuxtConfig({
 
 Do not import files under `layers/identity/` (Tiers). Those paths are not public. Do not import `#identity` from the Host.
 
-Extending this Layer registers `/register` and `/login` (SSR forms, `auth` layout), `/protected` (default layout, Identity `mayAccessRoute` middleware), `POST /api/identity/register`, and `POST /api/identity/login`. The Host must not deep-import Better Auth, Drizzle tables, or Identity Tiers.
+Extending this Layer registers `/register` and `/login` (SSR forms, `auth` layout), `/protected` (default layout, Identity `mayAccessRoute` middleware, logout action), `POST /api/identity/register`, `POST /api/identity/login`, and `POST /api/identity/logout`. The Host must not deep-import Better Auth, Drizzle tables, or Identity Tiers.
 
 ## Environment
 
@@ -48,8 +48,9 @@ The in-memory fake’s `register` does not start a session. The Better Auth adap
 | `POST` | `/api/identity/register` | Requires CSRF (`csrf-token` header). `201` with `{ ok: true, data: { id, email } }` and an httpOnly session cookie. `400` validation field errors. `409` `{ ok: false, error: { code: 'duplicate-email' } }`. `403` without CSRF. |
 | `GET` | `/login` | SSR form with email and password. CSRF token is issued as `<meta name="csrf-token">`. With a session cookie, the HTML includes the member email. |
 | `POST` | `/api/identity/login` | Requires CSRF (`csrf-token` header). `200` with `{ ok: true, data: { id, email } }` and an httpOnly session cookie. `401` `{ ok: false, error: { code: 'invalid-credentials' } }` for both wrong password and unknown email. `403` without CSRF. |
-| `GET` | `/protected` | Member-only page. Anonymous visitors are redirected to `/login` (no member-only HTML). A session cookie that `mayAccessRoute` allows receives `200` with the protected copy. |
+| `GET` | `/protected` | Member-only page. Anonymous visitors are redirected to `/login` (no member-only HTML). A session cookie that `mayAccessRoute` allows receives `200` with the protected copy and a logout form. |
+| `POST` | `/api/identity/logout` | Requires CSRF (`csrf-token` header). `200` `{ ok: true }`. The server session is invalidated so a replayed cookie cannot open `/protected`. `403` without CSRF. |
 
 ## Out of scope for this interface
 
-OAuth, magic links, password reset, email verification, 2FA. Logout HTTP lands in a later work package.
+OAuth, magic links, password reset, email verification, 2FA.
