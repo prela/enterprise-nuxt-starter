@@ -1,0 +1,39 @@
+# Smoke the Coolify Playground preview after a merge to develop.
+# Coolify auto-deploys develop; this job only observes the Host HTTP contract
+# (health, readiness, baseline headers, CSP report-only).
+
+name: Preview smoke
+
+on:
+  push:
+    branches:
+      - develop
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          # Same pnpm as the Playground Dockerfile so CI and Compose do not drift.
+          version: 11.18.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install lockfile dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Smoke Playground preview
+        env:
+          PREVIEW_URL: ${{ vars.PREVIEW_URL }}
+        run: pnpm smoke --wait-ms 600000 --poll-ms 10000

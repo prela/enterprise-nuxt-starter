@@ -27,11 +27,27 @@ pnpm dev
 
 `pnpm dev` uses `NUXT_DATABASE_URL` from `.env` (localhost). The Playground Compose service uses the `postgres` hostname on the Compose network. `.env` also documents `DATABASE_URL` as the same URL for Drizzle when Identity attaches.
 
+## Coolify preview (`develop`)
+
+Merges to `develop` deploy the Playground on Coolify from `compose.preview.yaml` (Playground + PostgreSQL, no host-published ports). Secrets stay in Coolify; they are not in git.
+
+1. In Coolify, create an application from this GitHub repository, branch `develop`, build pack **Docker Compose**, compose file `compose.preview.yaml`.
+2. Set the playground domain on port `3000` (HTTPS).
+3. In Coolify environment variables, set `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `NUXT_BETTER_AUTH_SECRET` (32+ characters), and `NUXT_PUBLIC_SITE_URL` to that HTTPS origin. Do not commit those values.
+4. Advanced → enable **Auto Deploy** so pushes to `develop` rebuild the preview ([Coolify auto-deploy](https://coolify.io/docs/applications/ci-cd/github/auto-deploy)).
+5. Deploy once, open the preview, and complete register/login (Identity cookies require `NUXT_PUBLIC_SITE_URL` to match the origin you open).
+6. In GitHub → Settings → Secrets and variables → Actions → Variables, set `PREVIEW_URL` to that origin (no trailing slash). Pushes to `develop` then run `pnpm smoke` against it.
+
+```bash
+pnpm smoke --url https://preview.example.com
+```
+
 ## Scripts
 
 ```bash
 pnpm lint
 pnpm typecheck
 pnpm test
+pnpm smoke
 pnpm build
 ```
