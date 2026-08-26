@@ -13,5 +13,8 @@ export default defineNuxtConfig({
   security: {
     // Report-only first: Playground scripts must load while we observe violations.
     contentSecurityPolicyReportOnly: true,
+    // Identity-changing POSTs (register, later login/logout) must not succeed from another origin.
+    // Core owns nuxt-security; this switch is required by the register action in the Host that extends Identity.
+    csrf: true,
   },
 })

@@ -1,8 +1,6 @@
 import type { IdentityResult } from '../domain/identity-result'
 import type { Principal, SessionToken } from '../domain/principal'
-import { randomUUID } from 'node:crypto'
-import { emailValidationMessage } from '../domain/email'
-import { passwordValidationMessage } from '../domain/password'
+import { registerValidationError } from '../domain/register-input'
 import { routeRequiresPrincipal } from '../domain/route-access'
 
 export interface ActiveSession {
@@ -28,8 +26,8 @@ function toPrincipal(member: StoredMember): Principal {
   return { id: member.id, email: member.email }
 }
 
-// In-memory fake behind the Identity port. A later Better Auth adapter must
-// implement this same IdentityPort; tests never import this module’s maps.
+// In-memory fake behind the Identity port. The Better Auth adapter implements
+// this same IdentityPort; tests never import this module’s maps.
 export function createIdentity(): IdentityPort {
   const membersByEmail = new Map<string, StoredMember>()
   const membersById = new Map<string, StoredMember>()
@@ -47,26 +45,15 @@ export function createIdentity(): IdentityPort {
 
   return {
     async register(input) {
-      const emailMessage = emailValidationMessage(input.email)
-      const passwordMessage = passwordValidationMessage(input.password)
-      if (emailMessage || passwordMessage) {
-        return {
-          ok: false,
-          error: {
-            code: 'validation',
-            fields: {
-              ...(emailMessage ? { email: emailMessage } : {}),
-              ...(passwordMessage ? { password: passwordMessage } : {}),
-            },
-          },
-        }
-      }
+      const validation = registerValidationError(input.email, input.password)
+      if (validation)
+        return { ok: false, error: validation }
 
       if (membersByEmail.has(input.email))
         return { ok: false, error: { code: 'duplicate-email' } }
 
       const member: StoredMember = {
-        id: randomUUID(),
+        id: crypto.randomUUID(),
         email: input.email,
         password: input.password,
       }
@@ -82,7 +69,7 @@ export function createIdentity(): IdentityPort {
       if (!member || member.password !== input.password)
         return { ok: false, error: { code: 'invalid-credentials' } }
 
-      const session = randomUUID()
+      const session = crypto.randomUUID()
       sessions.set(session, member.id)
       return {
         ok: true,

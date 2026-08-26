@@ -9,7 +9,16 @@
     "./port": "./port.ts"
   },
   "main": "./nuxt.config.ts",
+  "scripts": {
+    "drizzle:generate": "drizzle-kit generate"
+  },
   "dependencies": {
+    "better-auth": "^1.4.0",
+    "drizzle-orm": "^0.45.2",
+    "postgres": "^3.4.9",
     "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.0"
   }
 }

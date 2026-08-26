@@ -1,6 +1,6 @@
 # Enterprise Nuxt Starter
 
-Playground Host at the repository root. It `extends` the Core and UI Nuxt Layers. Identity lands in a later work package.
+Playground Host at the repository root. It `extends` the Core, UI, and Identity Nuxt Layers.
 
 ## Local topology (Compose)
 
@@ -13,8 +13,9 @@ docker compose up --build
 
 - `GET /health` — process is up (`Cache-Control: no-store`)
 - `GET /ready` — `200` when PostgreSQL is up, `503` when it is down (`Cache-Control: no-store`)
+- `GET /register` — SSR register form (Identity Layer)
 
-Persistence is PostgreSQL via Drizzle (ADR-0003). Identity later attaches schema to this engine. MySQL is not used.
+Persistence is PostgreSQL via Drizzle (ADR-0003). Identity owns user and session migrations on this engine. MySQL is not used.
 
 To run the Host with `pnpm dev` against the same Postgres:
 
