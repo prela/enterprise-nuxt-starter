@@ -20,7 +20,7 @@ function emptyCoolifySameNameMappings(yaml: string): string {
 }
 
 describe('coolify preview postgres', () => {
-  it('still supplies POSTGRES_PASSWORD after Coolify empties same-name ${VAR} mappings', () => {
+  it('still supplies POSTGRES_PASSWORD after Coolify empties same-name mappings', () => {
     const after = emptyCoolifySameNameMappings(compose)
     expect(after).not.toMatch(/^\s+POSTGRES_PASSWORD:\s*\$\{POSTGRES_PASSWORD\}\s*$/m)
     expect(after).toMatch(/env_file:/)
@@ -31,9 +31,9 @@ describe('coolify preview postgres', () => {
     // `$$POSTGRES_USER` becomes `$playground` after Coolify substitutes
     // `$POSTGRES_USER`, then Compose interpolates that as empty → `-U` with
     // no user → healthcheck never succeeds → `depends_on: service_healthy` fails.
-    const command
-      = compose.match(/test:\s*\['CMD-SHELL',\s*'([^']+)'\]/)?.[1] ?? ''
-    expect(command).toBe('pg_isready')
+    const lines = compose.split('\n')
+    const cmdIndex = lines.findIndex(line => line.trim() === '- CMD-SHELL')
+    expect(lines[cmdIndex + 1]?.trim()).toBe('- pg_isready')
     expect(compose).toMatch(/start_period:/)
     expect(compose).toMatch(/^\s+PGUSER:\s*\$\{POSTGRES_USER\}\s*$/m)
   })

@@ -22,7 +22,9 @@ services:
     healthcheck:
       # No `$` in the command: Coolify interpolates `$VAR` in compose YAML,
       # so `$$POSTGRES_USER` became an empty `-U` and the check never passed.
-      test: ['CMD-SHELL', 'pg_isready']
+      test:
+        - CMD-SHELL
+        - pg_isready
       interval: 5s
       timeout: 5s
       retries: 10
