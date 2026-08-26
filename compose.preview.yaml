@@ -14,6 +14,15 @@ services:
     # `POSTGRES_USER: null` and unsets the env_file value.
     env_file:
       - .env
+    environment:
+      # Coolify 4.3.11 only copies UI secrets onto a service when they appear
+      # under environment: (Show deployable compose had none). env_file .env
+      # did not carry POSTGRES_PASSWORD, so postgres exited: "superuser password
+      # is not specified." Name-only keys (same as SERVICE_URL_PLAYGROUND_3000)
+      # let Coolify inject. Do not write KEY: ${KEY} — that is #9136.
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
