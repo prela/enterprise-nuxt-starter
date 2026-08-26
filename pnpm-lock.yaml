@@ -11,6 +11,9 @@ importers:
       '@starter/core':
         specifier: workspace:*
         version: link:layers/core
+      '@starter/identity':
+        specifier: workspace:*
+        version: link:layers/identity
       '@starter/ui':
         specifier: workspace:*
         version: link:layers/ui
@@ -60,6 +63,12 @@ importers:
       postgres:
         specifier: ^3.4.9
         version: 3.4.9
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
+
+  layers/identity:
+    dependencies:
       zod:
         specifier: ^4.4.3
         version: 4.4.3
