@@ -123,10 +123,15 @@ export function createBetterAuthIdentity(
     },
 
     async endSession(session) {
+      await http.ensureReady?.()
       const headers = new Headers(http.requestHeaders)
       if (!headers.has('cookie'))
         headers.set('cookie', `better-auth.session_token=${session}`)
-      await auth.api.signOut({ headers })
+      const response = await auth.api.signOut({
+        headers,
+        asResponse: true,
+      })
+      copyCookies(response.headers, http.cookieHeaders)
     },
 
     currentPrincipal: principalFor,
