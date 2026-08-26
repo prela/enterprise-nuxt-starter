@@ -30,17 +30,14 @@ function toPrincipal(member: StoredMember): Principal {
 // this same IdentityPort; tests never import this module’s maps.
 export function createIdentity(): IdentityPort {
   const membersByEmail = new Map<string, StoredMember>()
-  const membersById = new Map<string, StoredMember>()
-  const sessions = new Map<SessionToken, string>()
+  // Session token → principal. The fake never keeps a session without a member,
+  // so currentPrincipal does not need a second lookup that cannot miss.
+  const sessions = new Map<SessionToken, Principal>()
 
   async function principalFor(session: SessionToken | null): Promise<Principal | null> {
     if (!session)
       return null
-    const memberId = sessions.get(session)
-    if (!memberId)
-      return null
-    const member = membersById.get(memberId)
-    return member ? toPrincipal(member) : null
+    return sessions.get(session) ?? null
   }
 
   return {
@@ -58,7 +55,6 @@ export function createIdentity(): IdentityPort {
         password: input.password,
       }
       membersByEmail.set(member.email, member)
-      membersById.set(member.id, member)
       return { ok: true, data: toPrincipal(member) }
     },
 
@@ -69,11 +65,12 @@ export function createIdentity(): IdentityPort {
       if (!member || member.password !== input.password)
         return { ok: false, error: { code: 'invalid-credentials' } }
 
+      const principal = toPrincipal(member)
       const session = crypto.randomUUID()
-      sessions.set(session, member.id)
+      sessions.set(session, principal)
       return {
         ok: true,
-        data: { session, principal: toPrincipal(member) },
+        data: { session, principal },
       }
     },
 
