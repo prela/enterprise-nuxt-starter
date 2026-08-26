@@ -7,19 +7,28 @@ services:
     image: postgres:16-alpine
     # Stable DNS for the Playground even if Coolify rewrites the compose service name.
     hostname: postgres
+    # Coolify writes UI env to `.env`. Load it instead of
+    # `POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}` — Coolify has emptied those
+    # same-name mappings (coollabsio/coolify#9136), so Postgres exits before
+    # it can become healthy.
+    env_file:
+      - .env
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      # pg_isready reads PGUSER, not POSTGRES_USER. Different key than
+      # POSTGRES_USER so Coolify will not strip the value.
+      PGUSER: ${POSTGRES_USER}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
+      # No `$` in the command: Coolify interpolates `$VAR` in compose YAML,
+      # so `$$POSTGRES_USER` became an empty `-U` and the check never passed.
       test:
         - CMD-SHELL
-        - pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+        - pg_isready
       interval: 5s
       timeout: 5s
       retries: 10
+      start_period: 20s
 
   playground:
     build:
@@ -27,16 +36,18 @@ services:
       dockerfile: Dockerfile
     expose:
       - '3000'
+    env_file:
+      - .env
     environment:
       # Present so Coolify generates the public URL for port 3000. Do not assign
       # an empty default; that would wipe the value Coolify injects.
       - SERVICE_URL_PLAYGROUND_3000
-      # Must be the public HTTPS origin (same host the owner opens). Identity cookies
-      # and Better Auth trusted origins follow this value.
-      - NUXT_PUBLIC_SITE_URL=${NUXT_PUBLIC_SITE_URL}
+      # NUXT_PUBLIC_SITE_URL and NUXT_BETTER_AUTH_SECRET come from env_file
+      # (Coolify UI). Same-name `KEY=${KEY}` list items would be emptied.
+      # Combined strings (not `KEY=${KEY}`) so Coolify #9136 cannot empty them.
+      # Host inside the Compose network must be `postgres`, not localhost.
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       - NUXT_DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      - NUXT_BETTER_AUTH_SECRET=${NUXT_BETTER_AUTH_SECRET}
     depends_on:
       postgres:
         condition: service_healthy
