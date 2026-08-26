@@ -11,7 +11,8 @@
     "lint": "CI=true eslint .",
     "typecheck": "nuxt typecheck",
     "test": "vitest run --coverage",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "smoke": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/smoke-preview.ts"
   },
   "dependencies": {
     "@starter/core": "workspace:*",

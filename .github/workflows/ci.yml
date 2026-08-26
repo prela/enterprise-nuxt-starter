@@ -8,9 +8,15 @@ on:
   pull_request:
     branches:
       - develop
+  # Agent/GitHub-App PR events often never start a run, so the required `ci` check
+  # stays Expected. Push on the feature branch still reports `ci` on the head SHA.
+  push:
+    branches:
+      - 'feature/**'
+  workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
 permissions:
