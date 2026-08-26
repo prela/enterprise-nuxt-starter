@@ -1,5 +1,6 @@
-# PRs into develop must stay green: lint, typecheck, Identity-port/Host HTTP tests,
-# and Playwright at the Host HTTP/UI seam. A red slice cannot merge.
+# PRs into develop must stay green: lint, typecheck, Identity-port/Host HTTP tests
+# with coverage gates (80% global / 95% domain and application-service), and
+# Playwright at the Host HTTP/UI seam. A red slice cannot merge.
 
 name: CI
 
