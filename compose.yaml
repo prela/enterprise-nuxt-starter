@@ -1,4 +1,4 @@
-# Playground + PostgreSQL. Identity later attaches Drizzle to this engine; MySQL is not used.
+# Playground + PostgreSQL. Identity applies its Drizzle migrations to this engine; MySQL is not used.
 # Copy `.env.example` to `.env` (gitignored) before `docker compose up --build`.
 
 services:
@@ -32,6 +32,7 @@ services:
       # Core reads NUXT_DATABASE_URL. DATABASE_URL is the same URL for Drizzle/Identity later.
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       NUXT_DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      NUXT_BETTER_AUTH_SECRET: ${NUXT_BETTER_AUTH_SECRET}
     depends_on:
       postgres:
         condition: service_healthy

@@ -12,6 +12,7 @@ export default defineConfig({
       NUXT_PUBLIC_SITE_URL: 'http://127.0.0.1:3000',
       // Closed port: default Host HTTP tests observe "PostgreSQL is down" without Docker.
       NUXT_DATABASE_URL: 'postgresql://playground:playground@127.0.0.1:59999/playground',
+      NUXT_BETTER_AUTH_SECRET: 'test-better-auth-secret-not-for-production',
     },
   },
 })

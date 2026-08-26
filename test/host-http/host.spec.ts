@@ -96,6 +96,7 @@ describe('host HTTP', async () => {
         env: {
           NUXT_PUBLIC_SITE_URL: 'http://127.0.0.1:3000',
           NUXT_DATABASE_URL: 'postgresql://postgres:postgres@127.0.0.1:55432/postgres',
+          NUXT_BETTER_AUTH_SECRET: 'test-better-auth-secret-not-for-production',
         },
       })
 
@@ -119,6 +120,7 @@ describe('host HTTP', async () => {
         env: {
           NUXT_PUBLIC_SITE_URL: '',
           NUXT_DATABASE_URL: 'postgresql://playground:playground@127.0.0.1:59999/playground',
+          NUXT_BETTER_AUTH_SECRET: 'test-better-auth-secret-not-for-production',
         },
       }),
     ).rejects.toThrow()
@@ -129,6 +131,7 @@ describe('host HTTP', async () => {
         env: {
           NUXT_PUBLIC_SITE_URL: 'not-a-url',
           NUXT_DATABASE_URL: 'postgresql://playground:playground@127.0.0.1:59999/playground',
+          NUXT_BETTER_AUTH_SECRET: 'test-better-auth-secret-not-for-production',
         },
       }),
     ).rejects.toThrow()
@@ -144,6 +147,7 @@ describe('host HTTP', async () => {
         env: {
           NUXT_PUBLIC_SITE_URL: 'http://127.0.0.1:3000',
           NUXT_DATABASE_URL: '',
+          NUXT_BETTER_AUTH_SECRET: 'test-better-auth-secret-not-for-production',
         },
       }),
     ).rejects.toThrow()
@@ -154,9 +158,25 @@ describe('host HTTP', async () => {
         env: {
           NUXT_PUBLIC_SITE_URL: 'http://127.0.0.1:3000',
           NUXT_DATABASE_URL: 'mysql://playground:playground@127.0.0.1:3306/playground',
+          NUXT_BETTER_AUTH_SECRET: 'test-better-auth-secret-not-for-production',
         },
       }),
     ).rejects.toThrow()
     expect(getServerLogs().join('\n')).toMatch(/ZodError|databaseUrl|PostgreSQL/i)
+  })
+
+  it('refuses to start when NUXT_BETTER_AUTH_SECRET is missing or too short', async () => {
+    await stopServer()
+
+    await expect(
+      startServer({
+        env: {
+          NUXT_PUBLIC_SITE_URL: 'http://127.0.0.1:3000',
+          NUXT_DATABASE_URL: 'postgresql://playground:playground@127.0.0.1:59999/playground',
+          NUXT_BETTER_AUTH_SECRET: '',
+        },
+      }),
+    ).rejects.toThrow()
+    expect(getServerLogs().join('\n')).toMatch(/ZodError|betterAuthSecret|NUXT_BETTER_AUTH_SECRET/i)
   })
 })

@@ -13,5 +13,10 @@ useHead({
       The Playground Host proves Starter Nuxt Layers. Market Products are separate
       applications that extend those Layers.
     </p>
+    <p class="mt-6">
+      <UButton to="/register">
+        Register
+      </UButton>
+    </p>
   </UContainer>
 </template>
