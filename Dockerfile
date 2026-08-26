@@ -19,7 +19,8 @@ ENV NODE_ENV=production
 COPY --from=build /app/.output .output
 # Identity Drizzle migrations are applied at first register against PostgreSQL.
 COPY --from=build /app/layers/identity/drizzle /app/layers/identity/drizzle
-# Nitro leaves drizzle/postgres external; install only the traced production deps.
-RUN cd .output/server && npm install --omit=dev
+# Nitro already copies traced runtime modules into `.output/server/node_modules`.
+# Its generated package.json also lists test toolchain (vitest, eslint, …). Feeding
+# that manifest to npm 10.9.8 on node:22-alpine crashes arborist (`edgesOut`).
 EXPOSE 3000
 CMD ["node", ".output/server/index.mjs"]
