@@ -7,22 +7,20 @@ services:
     image: postgres:16-alpine
     # Stable DNS for the Playground even if Coolify rewrites the compose service name.
     hostname: postgres
-    # Coolify writes UI env to `.env`. Load it instead of
-    # `POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}` — Coolify has emptied those
-    # same-name mappings (coollabsio/coolify#9136). Do not interpolate
-    # `${POSTGRES_USER}` on this service: Coolify then injects
-    # `POSTGRES_USER: null` and unsets the env_file value.
+    # Coolify writes UI env to `.env` (NUXT_*). Do not map
+    # `POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}` — Coolify empties same-name
+    # keys (coollabsio/coolify#9136). Name-only POSTGRES_* list items became
+    # `POSTGRES_PASSWORD: ''` in Show deployable compose, so postgres still
+    # exited with no superuser password.
     env_file:
       - .env
     environment:
-      # Coolify 4.3.11 only copies UI secrets onto a service when they appear
-      # under environment: (Show deployable compose had none). env_file .env
-      # did not carry POSTGRES_PASSWORD, so postgres exited: "superuser password
-      # is not specified." Name-only keys (same as SERVICE_URL_PLAYGROUND_3000)
-      # let Coolify inject. Do not write KEY: ${KEY} — that is #9136.
-      - POSTGRES_USER
-      - POSTGRES_PASSWORD
-      - POSTGRES_DB
+      # Coolify generates SERVICE_USER_POSTGRES / SERVICE_PASSWORD_POSTGRES
+      # (not the same name as POSTGRES_PASSWORD, so #9136 does not empty them).
+      # Literal POSTGRES_DB: Coolify left `${POSTGRES_DB}` uninterpolated.
+      - POSTGRES_USER=${SERVICE_USER_POSTGRES}
+      - POSTGRES_PASSWORD=${SERVICE_PASSWORD_POSTGRES}
+      - POSTGRES_DB=playground
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
@@ -42,8 +40,10 @@ services:
       # (Coolify UI). Same-name `KEY=${KEY}` list items would be emptied.
       # Combined strings (not `KEY=${KEY}`) so Coolify #9136 cannot empty them.
       # Host inside the Compose network must be `postgres`, not localhost.
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      - NUXT_DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      # Same SERVICE_* identifier as postgres so user/password match. Literal
+      # db name: Coolify left `${POSTGRES_DB}` uninterpolated in DATABASE_URL.
+      - DATABASE_URL=postgresql://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@postgres:5432/playground
+      - NUXT_DATABASE_URL=postgresql://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@postgres:5432/playground
     # Coolify 4.3.11 injects `POSTGRES_USER: null` on postgres when that service
     # interpolates `${POSTGRES_USER}` (Show deployable compose). That unsets
     # env_file's user, so `pg_isready` never passes and `service_healthy` fails
