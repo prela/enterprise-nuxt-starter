@@ -67,7 +67,10 @@ export async function identityFromEvent(event: H3Event) {
 }
 
 export function sessionTokenFromEvent(event: H3Event): string | null {
-  return getCookie(event, 'better-auth.session_token') ?? null
+  // HTTPS (Playground preview) prefixes the session cookie; HTTP Host tests do not.
+  return getCookie(event, '__Secure-better-auth.session_token')
+    ?? getCookie(event, 'better-auth.session_token')
+    ?? null
 }
 
 export async function currentPrincipalFromEvent(event: H3Event) {

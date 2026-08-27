@@ -119,4 +119,58 @@ describe('host HTTP protected page', async () => {
       await postgres.close()
     }
   })
+
+  it('lets a logged-in member open the protected page when the site URL is HTTPS', async () => {
+    const postgres = new PGlite()
+    const postgresWire = new PGLiteSocketServer({
+      db: postgres,
+      host: '127.0.0.1',
+      port: 55437,
+    })
+    await postgresWire.start()
+
+    const env = {
+      // Preview is HTTPS. Better Auth then prefixes the session cookie; the Host must still see the member.
+      NUXT_PUBLIC_SITE_URL: 'https://127.0.0.1:3000',
+      NUXT_DATABASE_URL: 'postgresql://postgres:postgres@127.0.0.1:55437/postgres',
+      // Better Auth rejects short secrets; this value is test-only.
+      NUXT_BETTER_AUTH_SECRET: 'test-better-auth-secret-not-for-production',
+    }
+
+    try {
+      await stopServer()
+      await startServer({ env })
+
+      const registered = await postJson('/api/identity/register', {
+        email: 'https-member@example.com',
+        password: 'password1',
+        ...(await pageAt('/register')),
+      })
+      expect(registered.status).toBe(201)
+
+      const loggedIn = await postJson('/api/identity/login', {
+        email: 'https-member@example.com',
+        password: 'password1',
+        ...(await pageAt('/login')),
+      })
+      expect(loggedIn.status).toBe(200)
+
+      const response = await fetch('/protected', {
+        headers: {
+          accept: 'text/html',
+          cookie: cookieHeaderFrom(loggedIn),
+        },
+      })
+      const html = await response.text()
+
+      expect(response.status).toBe(200)
+      expect(html).toMatch(/Protected page/)
+      expect(html).toMatch(/Identity is working/)
+      expect(html).not.toMatch(/<input[^>]*name="password"/i)
+    }
+    finally {
+      await postgresWire.stop()
+      await postgres.close()
+    }
+  })
 })
