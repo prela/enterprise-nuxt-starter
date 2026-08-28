@@ -3,6 +3,3 @@ export interface Principal {
   id: string
   email: string
 }
-
-// Opaque to callers so a later Better Auth session cookie can replace this string.
-export type SessionToken = string

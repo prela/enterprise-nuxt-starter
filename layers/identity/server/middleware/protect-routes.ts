@@ -6,10 +6,9 @@ export default defineEventHandler(async (event) => {
   if (!routeRequiresPrincipal(route))
     return
 
-  const session = sessionTokenFromEvent(event)
   const { identity } = await identityFromEvent(event)
   // Authorization is the port’s may-access-route, not Better Auth session types.
-  if (await identity.mayAccessRoute({ session, route }))
+  if (await identity.mayAccessRoute(route))
     return
 
   return sendRedirect(event, '/login')

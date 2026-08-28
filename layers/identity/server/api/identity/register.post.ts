@@ -17,7 +17,7 @@ function statusFor(error: IdentityError): number {
 export default defineEventHandler(async (event) => {
   // Register rules stay in the Identity application service, not in Pinia or this handler.
   const parsed = registerPayloadSchema.safeParse(await readBody(event))
-  const { identity, cookieHeaders } = await identityFromEvent(event)
+  const { identity, cookieBag } = await identityFromEvent(event)
   const result = await identity.register({
     email: parsed.success ? parsed.data.email : '',
     password: parsed.success ? parsed.data.password : '',
@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
     return result
   }
 
-  appendIdentityCookies(event, cookieHeaders)
+  appendIdentityCookies(event, cookieBag)
 
   setResponseStatus(event, 201)
   return result

@@ -4,8 +4,6 @@ export type IdentityError
   = | { code: 'validation', fields: { email?: string, password?: string } }
     | { code: 'duplicate-email' }
     | { code: 'invalid-credentials' }
-    | { code: 'unauthenticated' }
-    | { code: 'forbidden' }
 
 export type IdentityResult<T>
   = | { ok: true, data: T }

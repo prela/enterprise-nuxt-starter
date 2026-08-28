@@ -15,7 +15,7 @@ function statusFor(error: IdentityError): number {
 export default defineEventHandler(async (event) => {
   // Authenticate rules stay in the Identity application service, not in Pinia or this handler.
   const parsed = loginPayloadSchema.safeParse(await readBody(event))
-  const { identity, cookieHeaders } = await identityFromEvent(event)
+  const { identity, cookieBag } = await identityFromEvent(event)
   const result = await identity.authenticate({
     email: parsed.success ? parsed.data.email : '',
     password: parsed.success ? parsed.data.password : '',
@@ -26,14 +26,8 @@ export default defineEventHandler(async (event) => {
     return result
   }
 
-  appendIdentityCookies(event, cookieHeaders)
+  appendIdentityCookies(event, cookieBag)
 
   // Session lives in the httpOnly cookie, not in JSON the page could stash in localStorage.
-  return {
-    ok: true,
-    data: {
-      id: result.data.principal.id,
-      email: result.data.principal.email,
-    },
-  }
+  return result
 })
