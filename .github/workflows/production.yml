@@ -59,7 +59,8 @@ jobs:
             echo "Set secret COOLIFY_PRODUCTION_WEBHOOK to the Coolify production deploy webhook."
             exit 1
           fi
-          curl --fail-with-body -fsS -X GET "$COOLIFY_PRODUCTION_WEBHOOK"
+          # --fail-with-body already implies fail-on-error; -f cannot be combined with it.
+          curl --fail-with-body -sS -X GET "$COOLIFY_PRODUCTION_WEBHOOK"
 
       - name: Smoke Playground production
         env:
