@@ -3,10 +3,26 @@ import { describe, expect, it } from 'vitest'
 
 // Seam: Identity Public Layer interface (register, authenticate, end session,
 // current principal, may-access-route). Tests never import Tiers or the fake.
+// Session is the cookie bag, not a token on the payload.
+
+function httpOnlySessionCookies(bag: Headers): string[] {
+  const cookies = typeof bag.getSetCookie === 'function'
+    ? bag.getSetCookie()
+    : [bag.get('set-cookie') ?? ''].filter(Boolean)
+  // Session cookie must be unreadable to page JavaScript; CSRF’s cookie is not the session.
+  return cookies.filter((cookie) => {
+    if (!/httponly/i.test(cookie) || /^csrf=/i.test(cookie) || /^__Host-csrf=/i.test(cookie))
+      return false
+    const nameValue = cookie.split(';')[0] ?? ''
+    const value = nameValue.slice(nameValue.indexOf('=') + 1).trim()
+    return value.length > 0
+  })
+}
 
 describe('identity port', () => {
-  it('registers a member with email and password', async () => {
-    const identity = createIdentity()
+  it('registers a member, starts a Session, and allows /protected without a separate authenticate', async () => {
+    const cookies = new Headers()
+    const identity = createIdentity(cookies)
 
     const result = await identity.register({
       email: 'member@example.com',
@@ -18,6 +34,12 @@ describe('identity port', () => {
       return
     expect(result.data.email).toBe('member@example.com')
     expect(result.data.id.length).toBeGreaterThan(0)
+    expect(httpOnlySessionCookies(cookies).length).toBeGreaterThan(0)
+    expect(await identity.currentPrincipal()).toEqual({
+      id: result.data.id,
+      email: 'member@example.com',
+    })
+    expect(await identity.mayAccessRoute('/protected')).toBe(true)
   })
 
   it('rejects an invalid email on register', async () => {
@@ -67,12 +89,14 @@ describe('identity port', () => {
     })
   })
 
-  it('authenticates a registered member with email and password', async () => {
-    const identity = createIdentity()
+  it('authenticates a registered member and starts a Session', async () => {
+    const cookies = new Headers()
+    const identity = createIdentity(cookies)
     await identity.register({
       email: 'member@example.com',
       password: 'password1',
     })
+    await identity.endSession()
 
     const result = await identity.authenticate({
       email: 'member@example.com',
@@ -82,8 +106,13 @@ describe('identity port', () => {
     expect(result.ok).toBe(true)
     if (!result.ok)
       return
-    expect(result.data.principal.email).toBe('member@example.com')
-    expect(result.data.session.length).toBeGreaterThan(0)
+    expect(result.data.email).toBe('member@example.com')
+    expect(result.data.id.length).toBeGreaterThan(0)
+    expect(httpOnlySessionCookies(cookies).length).toBeGreaterThan(0)
+    expect(await identity.currentPrincipal()).toEqual({
+      id: result.data.id,
+      email: 'member@example.com',
+    })
   })
 
   it('returns the same invalid-credentials error for a wrong password and an unknown email', async () => {
@@ -110,69 +139,37 @@ describe('identity port', () => {
     expect(unknownEmail).toEqual(wrongPassword)
   })
 
-  it('returns the principal for an authenticated session', async () => {
+  it('forgets the Principal after the Session ends', async () => {
     const identity = createIdentity()
     await identity.register({
       email: 'member@example.com',
       password: 'password1',
     })
-    const authenticated = await identity.authenticate({
-      email: 'member@example.com',
-      password: 'password1',
-    })
-    expect(authenticated.ok).toBe(true)
-    if (!authenticated.ok)
-      return
 
-    const principal = await identity.currentPrincipal(authenticated.data.session)
+    await identity.endSession()
 
-    expect(principal).toEqual({
-      id: authenticated.data.principal.id,
-      email: 'member@example.com',
-    })
+    expect(await identity.currentPrincipal()).toBeNull()
+    expect(await identity.mayAccessRoute('/protected')).toBe(false)
   })
 
-  it('forgets the principal after the session ends', async () => {
+  it('allows / and /login without a Principal and denies /protected', async () => {
     const identity = createIdentity()
-    await identity.register({
-      email: 'member@example.com',
-      password: 'password1',
-    })
-    const authenticated = await identity.authenticate({
-      email: 'member@example.com',
-      password: 'password1',
-    })
-    expect(authenticated.ok).toBe(true)
-    if (!authenticated.ok)
-      return
 
-    await identity.endSession(authenticated.data.session)
-
-    expect(await identity.currentPrincipal(authenticated.data.session)).toBeNull()
+    expect(await identity.mayAccessRoute('/')).toBe(true)
+    expect(await identity.mayAccessRoute('/login')).toBe(true)
+    expect(await identity.mayAccessRoute('/protected')).toBe(false)
+    expect(await identity.mayAccessRoute('/protected/settings')).toBe(false)
   })
 
-  it('allows an authenticated member to access a protected route and denies an anonymous visitor', async () => {
-    const identity = createIdentity()
-    const route = '/protected'
+  it('does not treat non-Session cookies as a Principal', async () => {
+    const cookies = new Headers()
+    cookies.set('cookie', 'csrf=abc; flags')
+    const identity = createIdentity(cookies)
 
-    expect(await identity.mayAccessRoute({ session: null, route })).toBe(false)
-    expect(await identity.mayAccessRoute({ session: null, route: '/' })).toBe(true)
+    expect(await identity.currentPrincipal()).toBeNull()
+    expect(await identity.mayAccessRoute('/protected')).toBe(false)
 
-    await identity.register({
-      email: 'member@example.com',
-      password: 'password1',
-    })
-    const authenticated = await identity.authenticate({
-      email: 'member@example.com',
-      password: 'password1',
-    })
-    expect(authenticated.ok).toBe(true)
-    if (!authenticated.ok)
-      return
-
-    expect(await identity.mayAccessRoute({
-      session: authenticated.data.session,
-      route,
-    })).toBe(true)
+    await identity.endSession()
+    expect(await identity.currentPrincipal()).toBeNull()
   })
 })

@@ -1,10 +1,8 @@
 export default defineEventHandler(async (event) => {
   // End-session rules stay in the Identity application service, not in Pinia or this handler.
-  const { identity, cookieHeaders } = await identityFromEvent(event)
-  const session = sessionTokenFromEvent(event)
-  if (session)
-    await identity.endSession(session)
+  const { identity, cookieBag } = await identityFromEvent(event)
+  await identity.endSession()
 
-  appendIdentityCookies(event, cookieHeaders)
+  appendIdentityCookies(event, cookieBag)
   return { ok: true }
 })

@@ -12,6 +12,7 @@ const identitySecretSchema = z.object({
 
 // Nitro bind: parse config, attach this request’s cookies, return the port.
 // Auth-instance cache and migrate-on-demand live in the Better Auth adapter.
+// Vendor cookie names stay inside that adapter; this bind copies the bag only.
 export async function identityFromEvent(event: H3Event) {
   const config = useRuntimeConfig(event)
   const parsed = identitySecretSchema.safeParse({
@@ -23,42 +24,29 @@ export async function identityFromEvent(event: H3Event) {
   if (!parsed.success)
     throw parsed.error
 
-  const cookieHeaders = new Headers()
-  const requestHeaders = new Headers(event.headers)
-  if (!requestHeaders.has('origin'))
-    requestHeaders.set('origin', parsed.data.siteUrl)
+  const cookieBag = new Headers()
+  const cookie = getHeader(event, 'cookie')
+  if (cookie)
+    cookieBag.set('cookie', cookie)
 
   const identity = createBetterAuthIdentity({
     databaseUrl: parsed.data.databaseUrl,
     secret: parsed.data.betterAuthSecret,
     baseURL: parsed.data.siteUrl,
     migrationsFolder: parsed.data.identityMigrationsFolder,
-  }, {
-    requestHeaders,
-    cookieHeaders,
-  })
-  return { identity, cookieHeaders }
-}
-
-export function sessionTokenFromEvent(event: H3Event): string | null {
-  // HTTPS (Playground preview) prefixes the session cookie; HTTP Host tests do not.
-  return getCookie(event, '__Secure-better-auth.session_token')
-    ?? getCookie(event, 'better-auth.session_token')
-    ?? null
+  }, cookieBag)
+  return { identity, cookieBag }
 }
 
 export async function currentPrincipalFromEvent(event: H3Event) {
-  const session = sessionTokenFromEvent(event)
-  if (!session)
-    return null
   const { identity } = await identityFromEvent(event)
-  return identity.currentPrincipal(session)
+  return identity.currentPrincipal()
 }
 
-export function appendIdentityCookies(event: H3Event, cookieHeaders: Headers) {
-  const cookies = typeof cookieHeaders.getSetCookie === 'function'
-    ? cookieHeaders.getSetCookie()
-    : [cookieHeaders.get('set-cookie') ?? ''].filter(Boolean)
+export function appendIdentityCookies(event: H3Event, cookieBag: Headers) {
+  const cookies = typeof cookieBag.getSetCookie === 'function'
+    ? cookieBag.getSetCookie()
+    : [cookieBag.get('set-cookie') ?? ''].filter(Boolean)
   for (const cookie of cookies)
     appendResponseHeader(event, 'set-cookie', cookie)
 }

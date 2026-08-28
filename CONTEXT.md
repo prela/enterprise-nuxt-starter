@@ -36,6 +36,14 @@ _Avoid_: layer (when meaning these four), level
 Who a user is and whether they may access a route. Hosted identity providers are adapters, not Identity itself.
 _Avoid_: auth, authentication, auth module (as the concept name)
 
+**Principal**:
+Who a user is once Identity has a Session: a stable id and email.
+_Avoid_: user (unqualified), Better Auth user
+
+**Session**:
+Proof Identity holds that a request belongs to a Principal. The Starter owns it as an httpOnly cookie, not a value a page script can store.
+_Avoid_: JWT, access token, session token, Better Auth cookie
+
 **Application service**:
 Domain or application logic behind a Tier seam. Not a deployable Product.
 _Avoid_: service (unqualified)
