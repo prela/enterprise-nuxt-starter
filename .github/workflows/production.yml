@@ -66,8 +66,10 @@ jobs:
             exit 1
           fi
           # --fail-with-body already implies fail-on-error; -f cannot be combined with it.
-          curl --fail-with-body -sS -X GET \
+          # Coolify Cloud returns 405 for GET /api/v1/deploy; POST is accepted.
+          curl --fail-with-body -sS -X POST \
             -H "Authorization: Bearer ${COOLIFY_API_TOKEN}" \
+            -H "Accept: application/json" \
             "$COOLIFY_PRODUCTION_WEBHOOK"
 
       - name: Smoke Playground production
