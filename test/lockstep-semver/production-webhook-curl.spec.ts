@@ -18,8 +18,10 @@ describe('production Coolify webhook curl', () => {
   })
 
   it('sends a Coolify API bearer token, not only the deploy URL', () => {
-    // Coolify Cloud returns 401 Unauthenticated for GET /api/v1/deploy without Sanctum.
+    // Coolify Cloud returns 401 Unauthenticated for /api/v1/deploy without Sanctum.
     expect(productionWorkflow).toContain('COOLIFY_API_TOKEN')
     expect(productionWorkflow).toContain('Authorization: Bearer')
+    expect(productionWorkflow).toContain('-X POST')
+    expect(productionWorkflow).not.toMatch(/curl --fail-with-body -sS -X GET/)
   })
 })
