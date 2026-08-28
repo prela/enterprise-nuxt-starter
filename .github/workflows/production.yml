@@ -54,13 +54,21 @@ jobs:
       - name: Deploy Playground on Coolify
         env:
           COOLIFY_PRODUCTION_WEBHOOK: ${{ secrets.COOLIFY_PRODUCTION_WEBHOOK }}
+          # Coolify Cloud's /api/v1/deploy requires a Sanctum bearer token (401 without it).
+          COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
         run: |
           if [ -z "$COOLIFY_PRODUCTION_WEBHOOK" ]; then
             echo "Set secret COOLIFY_PRODUCTION_WEBHOOK to the Coolify production deploy webhook."
             exit 1
           fi
+          if [ -z "$COOLIFY_API_TOKEN" ]; then
+            echo "Set secret COOLIFY_API_TOKEN to a Coolify API token with deploy scope."
+            exit 1
+          fi
           # --fail-with-body already implies fail-on-error; -f cannot be combined with it.
-          curl --fail-with-body -sS -X GET "$COOLIFY_PRODUCTION_WEBHOOK"
+          curl --fail-with-body -sS -X GET \
+            -H "Authorization: Bearer ${COOLIFY_API_TOKEN}" \
+            "$COOLIFY_PRODUCTION_WEBHOOK"
 
       - name: Smoke Playground production
         env:
