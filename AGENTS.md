@@ -1,3 +1,13 @@
+## GitHub Actions
+
+PRs into `develop` need a check named `ci`. If GitHub shows **Expected — Waiting for status to be reported** and Actions has no run for the PR head, do not ask the owner to change git author. Run:
+
+```bash
+gh workflow run CI --ref "$(git branch --show-current)"
+```
+
+Then wait for that run. Do not merge until `ci` is green on the current head SHA.
+
 ## Agent skills
 
 ### Issue tracker

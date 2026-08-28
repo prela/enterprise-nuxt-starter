@@ -30,7 +30,7 @@ Ship Starter v1 as three optional-to-a-Product Nuxt Layers (`core`, `ui`, `ident
 16. As the owner, I want the Starter to remain `0.y.z` until a production Product depends on it, so that public-interface breaks stay honest and cheap.
 17. As an agent, I want work package IDs (`0.1`, `1.1`, `3.3`) to label tickets and branches only, so that I do not tag `git init` as a release.
 18. As an agent, I want Conventional Commits, so that the changelog can be produced mechanically.
-19. As the owner, I want a private GitHub repository named `enterprise-nuxt-starter`, so that Actions and Coolify have a remote.
+19. As the owner, I want a public GitHub repository named `enterprise-nuxt-starter`, so that Actions and Coolify have a remote and GitHub Free can enforce branch protection.
 20. As the owner, I want to create or connect that remote myself, so that agents do not push before branch protection exists.
 21. As the owner, I want branch protection on `develop` and `main`, so that the GitFlow cannot be bypassed.
 22. As an agent, I want a PR template, so that every work package records what changed and how it was tested.
@@ -99,7 +99,7 @@ Ship Starter v1 as three optional-to-a-Product Nuxt Layers (`core`, `ui`, `ident
 - **Env:** Required secrets and database URL validated with Zod at startup; boot fails closed.
 - **Git:** Simplified GitFlow. Default branch `develop`. Feature branches `feature/<work-package-id>-<slug>`. Release PR `develop` → `main`. Production from SemVer tag on `main`. Hotfix from `main` into `main` and `develop`. ADR-0004.
 - **Versioning:** One version for all Layers. `0.y.z` until a production Product depends on the Starter; then `1.0.0`. Work package IDs are not tags. Conventional Commits. ADR-0005.
-- **Remote:** Private GitHub `enterprise-nuxt-starter`. Owner connects remote and protection before agents push. PR template required.
+- **Remote:** Public GitHub `enterprise-nuxt-starter` (Free-plan protection; private would need Pro). Owner connects remote and protection before agents push. PR template required. ADR-0009.
 - **Compose:** Playground + PostgreSQL for local and E2E.
 - **CI:** On PRs to `develop`: lint, typecheck, unit (Identity port + any Core behavior tested via Host HTTP where applicable), Playwright E2E, coverage gates 80% global / 95% domain and application-service modules.
 - **Deploy:** Coolify preview from `develop`; production from tag on `main`; smoke health/headers/CSP.

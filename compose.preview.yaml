@@ -1,0 +1,56 @@
+# Playground + PostgreSQL on Coolify (preview from `develop`; production from a
+# SemVer tag on `main`). Same topology, two Coolify applications. Coolify's proxy
+# routes to playground:3000. Do not publish host ports: that would expose PostgreSQL
+# and bypass the proxy. Local topology stays in compose.yaml.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    # Stable DNS for the Playground even if Coolify rewrites the compose service name.
+    hostname: postgres
+    # Coolify writes UI env to `.env` (NUXT_*). Do not map
+    # `POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}` — Coolify empties same-name
+    # keys (coollabsio/coolify#9136). Name-only POSTGRES_* list items became
+    # `POSTGRES_PASSWORD: ''` in Show deployable compose, so postgres still
+    # exited with no superuser password.
+    env_file:
+      - .env
+    environment:
+      # Coolify generates SERVICE_USER_POSTGRES / SERVICE_PASSWORD_POSTGRES
+      # (not the same name as POSTGRES_PASSWORD, so #9136 does not empty them).
+      # Literal POSTGRES_DB: Coolify left `${POSTGRES_DB}` uninterpolated.
+      - POSTGRES_USER=${SERVICE_USER_POSTGRES}
+      - POSTGRES_PASSWORD=${SERVICE_PASSWORD_POSTGRES}
+      - POSTGRES_DB=playground
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  playground:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    expose:
+      - '3000'
+    env_file:
+      - .env
+    environment:
+      # Present so Coolify generates the public URL for port 3000. Do not assign
+      # an empty default; that would wipe the value Coolify injects.
+      - SERVICE_URL_PLAYGROUND_3000
+      # NUXT_PUBLIC_SITE_URL and NUXT_BETTER_AUTH_SECRET come from env_file
+      # (Coolify UI). Same-name `KEY=${KEY}` list items would be emptied.
+      # Combined strings (not `KEY=${KEY}`) so Coolify #9136 cannot empty them.
+      # Host inside the Compose network must be `postgres`, not localhost.
+      # Same SERVICE_* identifier as postgres so user/password match. Literal
+      # db name: Coolify left `${POSTGRES_DB}` uninterpolated in DATABASE_URL.
+      - DATABASE_URL=postgresql://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@postgres:5432/playground
+      - NUXT_DATABASE_URL=postgresql://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@postgres:5432/playground
+    # Coolify 4.3.11 injects `POSTGRES_USER: null` on postgres when that service
+    # interpolates `${POSTGRES_USER}` (Show deployable compose). That unsets
+    # env_file's user, so `pg_isready` never passes and `service_healthy` fails
+    # `docker compose up -d`. Playground `/ready` waits for Identity's engine.
+    depends_on:
+      - postgres
+
+volumes:
+  postgres-data:

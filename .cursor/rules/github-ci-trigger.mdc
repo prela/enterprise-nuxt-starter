@@ -1,0 +1,16 @@
+---
+description: Unstick the required GitHub ci check without touching git author
+alwaysApply: true
+---
+
+# Required `ci` check
+
+Branch protection on `develop` requires a check named `ci`. The owner does not manage git `user.name` / `user.email`. Do not tell them to set author identity.
+
+If a PR shows **Expected — Waiting for status to be reported** and `gh pr checks` / Actions has no run for the current head:
+
+```bash
+gh workflow run CI --ref "$(git branch --show-current)"
+```
+
+Wait until job `ci` is green on that SHA before treating the PR as mergeable.

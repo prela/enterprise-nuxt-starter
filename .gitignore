@@ -32,3 +32,6 @@ blob-report
 
 # Local overrides
 *.local
+
+# pnpm
+.pnpm-store

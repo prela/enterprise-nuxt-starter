@@ -1,2 +1,10 @@
+# Workspace packages are the Nuxt Layers. pnpm 11 also reads settings from this file.
+# Only listed packages may run install scripts (pnpm 11 allowBuilds).
+packages:
+  - 'layers/*'
 allowBuilds:
-  esbuild: set this to true or false
+  esbuild: true
+  # Playwright's postinstall only registers the lockfile package; browsers are
+  # installed later via `pnpm exec playwright install` (CI and local E2E).
+  playwright: true
+  vue-demi: true

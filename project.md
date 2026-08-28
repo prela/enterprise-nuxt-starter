@@ -128,7 +128,7 @@ See `docs/adr/0008-enforce-public-layer-interface.md`. The Host and future Produ
 - No crossing Nuxt Layer boundaries in one PR except the Host work package that `extends` them.
 - If blocked, stop and write on the ticket; do not start the next work package.
 
-Phase 0 includes a private GitHub repository named `enterprise-nuxt-starter`. The owner creates or connects the remote; agents do not push until that remote and branch protection exist.
+Phase 0 includes a public GitHub repository named `enterprise-nuxt-starter` (public so GitHub Free can enforce branch protection on `develop` and `main`; private + protection needs Pro). The owner creates or connects the remote; agents do not push until that remote and branch protection exist.
 
 ## Identity
 
@@ -154,7 +154,7 @@ Work packages are the unit of a feature branch (`feature/0.1-init-git`). A phase
 | WP | Name | Depends on |
 | --- | --- | --- |
 | **0.1** | Init git: `develop` default, `main` exists, ignore rules | — |
-| **0.2** | Private GitHub remote, branch protection, PR template | 0.1 |
+| **0.2** | Public GitHub remote, branch protection, PR template | 0.1 |
 | **0.3** | Root scripts: `lint`, `typecheck`, `test` | 0.1 |
 | **1.1** | Scaffold Core Nuxt Layer | 0.3 |
 | **1.2** | Zod env / runtime-config schema + tests | 1.1 |

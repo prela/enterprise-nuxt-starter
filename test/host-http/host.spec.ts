@@ -1,0 +1,182 @@
+import { fileURLToPath } from 'node:url'
+import { PGlite } from '@electric-sql/pglite'
+import { PGLiteSocketServer } from '@electric-sql/pglite-socket'
+import { fetch, getServerLogs, setup, startServer, stopServer } from '@nuxt/test-utils/e2e'
+import { describe, expect, it } from 'vitest'
+
+const rootDir = fileURLToPath(new URL('../..', import.meta.url))
+
+describe('host HTTP', async () => {
+  await setup({
+    rootDir,
+    browser: false,
+    server: true,
+  })
+
+  it('health returns success and must not be cached', async () => {
+    const response = await fetch('/health')
+
+    expect(response.status).toBe(200)
+    // A JSON probe, not the Host HTML fallback that Nuxt would also serve as 200.
+    expect(response.headers.get('content-type') ?? '').toMatch(/json/i)
+    // no-store is the HTTP contract that stops an orchestrator from keeping a stale "ok".
+    expect(response.headers.get('cache-control') ?? '').toMatch(/no-store/i)
+  })
+
+  it('readiness fails and must not be cached when PostgreSQL is down', async () => {
+    const response = await fetch('/ready')
+
+    expect(response.status).toBe(503)
+    expect(response.headers.get('content-type') ?? '').toMatch(/json/i)
+    expect(response.headers.get('cache-control') ?? '').toMatch(/no-store/i)
+  })
+
+  it('home tells the visitor this is a Playground, not a Product', async () => {
+    const response = await fetch('/')
+    const html = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(html).toMatch(/Playground/)
+    expect(html).toMatch(/not a Product/)
+  })
+
+  it('home chrome is mobile-first, exposes a main landmark, skip link, and color-mode control', async () => {
+    const response = await fetch('/')
+    const html = await response.text()
+
+    expect(html).toMatch(/lang="en"/)
+    expect(html).toMatch(/Skip to main content/)
+    expect(html).toMatch(/id="main"/)
+    expect(html).toMatch(/<main\b/)
+    expect(html).toMatch(/Switch between light and dark mode/)
+    expect(html).toMatch(/name="viewport"/)
+  })
+
+  it('unknown routes render error chrome that still names the Playground', async () => {
+    // ofetch defaults to JSON; a visitor's browser asks for HTML.
+    const response = await fetch('/this-route-does-not-exist', { headers: { accept: 'text/html' } })
+    const html = await response.text()
+
+    expect(response.status).toBe(404)
+    expect(html).toMatch(/Playground/)
+    expect(html).toMatch(/Page not found/)
+    expect(html).toMatch(/That page is not available/)
+    expect(html).toMatch(/<main\b/)
+    expect(html).toMatch(/Skip to main content/)
+    expect(html).toMatch(/Switch between light and dark mode/)
+  })
+
+  it('sends baseline headers and CSP in report-only, not enforced', async () => {
+    const response = await fetch('/')
+    const csp = response.headers.get('content-security-policy')
+    const cspReportOnly = response.headers.get('content-security-policy-report-only')
+
+    // Known baseline names; values come from the security module, not from this test recomputing them.
+    expect(response.headers.get('x-content-type-options')).toBe('nosniff')
+    expect(response.headers.get('x-frame-options')).toBeTruthy()
+    expect(response.headers.get('referrer-policy')).toBeTruthy()
+
+    expect(cspReportOnly).toBeTruthy()
+    expect(csp).toBeNull()
+  })
+
+  it('readiness succeeds and must not be cached when PostgreSQL is up', async () => {
+    // PostgreSQL-wire listener so /ready is observed at the Host HTTP seam without Docker.
+    const postgres = new PGlite()
+    const postgresWire = new PGLiteSocketServer({
+      db: postgres,
+      host: '127.0.0.1',
+      port: 55432,
+    })
+    await postgresWire.start()
+
+    try {
+      await stopServer()
+      await startServer({
+        env: {
+          NUXT_PUBLIC_SITE_URL: 'http://127.0.0.1:3000',
+          NUXT_DATABASE_URL: 'postgresql://postgres:postgres@127.0.0.1:55432/postgres',
+          NUXT_BETTER_AUTH_SECRET: 'test-better-auth-secret-not-for-production',
+        },
+      })
+
+      const response = await fetch('/ready')
+
+      expect(response.status).toBe(200)
+      expect(response.headers.get('content-type') ?? '').toMatch(/json/i)
+      expect(response.headers.get('cache-control') ?? '').toMatch(/no-store/i)
+    }
+    finally {
+      await postgresWire.stop()
+      await postgres.close()
+    }
+  })
+
+  it('refuses to start when required env is missing or invalid, with a Zod failure', async () => {
+    await stopServer()
+
+    await expect(
+      startServer({
+        env: {
+          NUXT_PUBLIC_SITE_URL: '',
+          NUXT_DATABASE_URL: 'postgresql://playground:playground@127.0.0.1:59999/playground',
+          NUXT_BETTER_AUTH_SECRET: 'test-better-auth-secret-not-for-production',
+        },
+      }),
+    ).rejects.toThrow()
+    expect(getServerLogs().join('\n')).toMatch(/ZodError|siteUrl|Invalid URL/i)
+
+    await expect(
+      startServer({
+        env: {
+          NUXT_PUBLIC_SITE_URL: 'not-a-url',
+          NUXT_DATABASE_URL: 'postgresql://playground:playground@127.0.0.1:59999/playground',
+          NUXT_BETTER_AUTH_SECRET: 'test-better-auth-secret-not-for-production',
+        },
+      }),
+    ).rejects.toThrow()
+    // Startup is the seam: the process must surface Zod, not a generic crash.
+    expect(getServerLogs().join('\n')).toMatch(/ZodError|siteUrl|Invalid URL/i)
+  })
+
+  it('refuses to start when NUXT_DATABASE_URL is missing or not PostgreSQL', async () => {
+    await stopServer()
+
+    await expect(
+      startServer({
+        env: {
+          NUXT_PUBLIC_SITE_URL: 'http://127.0.0.1:3000',
+          NUXT_DATABASE_URL: '',
+          NUXT_BETTER_AUTH_SECRET: 'test-better-auth-secret-not-for-production',
+        },
+      }),
+    ).rejects.toThrow()
+    expect(getServerLogs().join('\n')).toMatch(/ZodError|databaseUrl|NUXT_DATABASE_URL/i)
+
+    await expect(
+      startServer({
+        env: {
+          NUXT_PUBLIC_SITE_URL: 'http://127.0.0.1:3000',
+          NUXT_DATABASE_URL: 'mysql://playground:playground@127.0.0.1:3306/playground',
+          NUXT_BETTER_AUTH_SECRET: 'test-better-auth-secret-not-for-production',
+        },
+      }),
+    ).rejects.toThrow()
+    expect(getServerLogs().join('\n')).toMatch(/ZodError|databaseUrl|PostgreSQL/i)
+  })
+
+  it('refuses to start when NUXT_BETTER_AUTH_SECRET is missing or too short', async () => {
+    await stopServer()
+
+    await expect(
+      startServer({
+        env: {
+          NUXT_PUBLIC_SITE_URL: 'http://127.0.0.1:3000',
+          NUXT_DATABASE_URL: 'postgresql://playground:playground@127.0.0.1:59999/playground',
+          NUXT_BETTER_AUTH_SECRET: '',
+        },
+      }),
+    ).rejects.toThrow()
+    expect(getServerLogs().join('\n')).toMatch(/ZodError|betterAuthSecret|NUXT_BETTER_AUTH_SECRET/i)
+  })
+})

@@ -7,11 +7,32 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "lint": "CI=true eslint .",
+    "typecheck": "nuxt typecheck",
+    "test": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "smoke": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/smoke-preview.ts",
+    "lockstep": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/lockstep-semver.ts"
   },
   "dependencies": {
+    "@starter/core": "workspace:*",
+    "@starter/identity": "workspace:*",
+    "@starter/ui": "workspace:*",
     "nuxt": "^4.5.2",
     "vue": "^3.5.41",
     "vue-router": "^5.2.0"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^9.3.0",
+    "@electric-sql/pglite": "^0.5.7",
+    "@electric-sql/pglite-socket": "^0.2.10",
+    "@nuxt/test-utils": "^4.1.0",
+    "@playwright/test": "^1.62.1",
+    "@vitest/coverage-v8": "4.1.11",
+    "eslint": "^10.9.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11",
+    "vue-tsc": "^3.3.11"
   }
 }
