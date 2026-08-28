@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { createServer } from 'node:http'
 import { describe, expect, it } from 'vitest'
-import { smokePreview } from '../../scripts/smoke-preview'
+import { runSmokeCli, smokePreview } from '../../scripts/smoke-preview'
 
 const jsonProbeHeaders = {
   'content-type': 'application/json',
@@ -166,6 +166,24 @@ describe('preview smoke (Host HTTP)', () => {
       expect(result.failures).toEqual([])
       expect(result.ok).toBe(true)
       expect(readyHits).toBeGreaterThanOrEqual(3)
+    }
+    finally {
+      await fixture.close()
+    }
+  })
+
+  it('smokes production from PRODUCTION_URL when PREVIEW_URL is unset', async () => {
+    const fixture = await listenFixtureHost((req, res) => {
+      if (req.url === '/health' || req.url === '/ready') {
+        sendJson(res, 200, { ok: true })
+        return
+      }
+      sendHome(res, hostContractHeaders)
+    })
+
+    try {
+      const code = await runSmokeCli([], { PRODUCTION_URL: fixture.url })
+      expect(code).toBe(0)
     }
     finally {
       await fixture.close()

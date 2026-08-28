@@ -48,12 +48,34 @@ After that PR is merged, run the owner wizard (opens Coolify and GitHub, capture
 pnpm smoke --url https://preview.example.com
 ```
 
+## Coolify production (SemVer tag on `main`)
+
+Production is an intentional release: a PR `develop` → `main`, then a `v0.y.z` tag. Merges to `main` do not deploy. All three Nuxt Layers stay on one lockstep `0.y.z` version (not `1.0.0` until a production Product depends on the Starter). Work package IDs (`0.1`, `6.2`) are not tags. Conventional Commits (`feat:`, `fix:`, `BREAKING CHANGE:`) are the changelog.
+
+After preview is live, run:
+
+```bash
+./scripts/setup-coolify-production.sh
+```
+
+1. Create a **second** Coolify application from this repository, branch `main`, compose file `compose.preview.yaml` (same topology, separate Postgres volume).
+2. Set the production domain on port `3000`. Set `NUXT_BETTER_AUTH_SECRET` and `NUXT_PUBLIC_SITE_URL` to the production origin. Auto Deploy stays **off**.
+3. Put the Coolify deploy webhook in GitHub secret `COOLIFY_PRODUCTION_WEBHOOK`. Set Actions variable `PRODUCTION_URL` to the production origin.
+4. Open a release PR `develop` → `main` (not a direct push). When `ci` is green, merge.
+5. Tag the merge commit `v0.y.z` matching `layers/*/package.json`, then `git push origin v0.y.z`. GitHub Actions deploys Coolify and runs `pnpm smoke` against `PRODUCTION_URL`.
+
+```bash
+pnpm lockstep --tag v0.0.0
+pnpm smoke --url https://playground.example.com
+```
+
 ## Scripts
 
 ```bash
 pnpm lint
 pnpm typecheck
 pnpm test
+pnpm lockstep
 pnpm smoke
 pnpm build
 ```

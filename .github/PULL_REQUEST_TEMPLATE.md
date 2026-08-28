@@ -15,4 +15,4 @@
 
 ## Target
 
-`develop` for work-package PRs. Release PRs are `develop` → `main` only.
+`develop` for work-package PRs. Release PRs are `develop` → `main` only. Conventional Commits (`feat:`, `fix:`, `BREAKING CHANGE:`) are the changelog; do not tag work package IDs (`0.1`, `6.2`).
