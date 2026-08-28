@@ -1,8 +1,6 @@
 import type { H3Event } from 'h3'
-import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import { appendResponseHeader } from 'h3'
 import { z } from 'zod'
-import { createIdentityAuth } from '#layers/identity/infrastructure/auth'
 import { createBetterAuthIdentity } from '#layers/identity/infrastructure/better-auth-identity'
 
 const identitySecretSchema = z.object({
@@ -12,31 +10,8 @@ const identitySecretSchema = z.object({
   identityMigrationsFolder: z.string(),
 })
 
-const migratedUrls = new Set<string>()
-const authByUrl = new Map<string, ReturnType<typeof createIdentityAuth>>()
-
-function persistenceFor(databaseUrl: string, secret: string, baseURL: string) {
-  const cached = authByUrl.get(databaseUrl)
-  if (cached)
-    return cached
-
-  const created = createIdentityAuth({ databaseUrl, secret, baseURL })
-  authByUrl.set(databaseUrl, created)
-  return created
-}
-
-async function ensureMigrated(databaseUrl: string, migrationsFolder: string) {
-  if (migratedUrls.has(databaseUrl))
-    return
-  const created = authByUrl.get(databaseUrl)
-  if (!created)
-    return
-  await migrate(created.db, {
-    migrationsFolder: migrationsFolder || 'layers/identity/drizzle',
-  })
-  migratedUrls.add(databaseUrl)
-}
-
+// Nitro bind: parse config, attach this request’s cookies, return the port.
+// Auth-instance cache and migrate-on-demand live in the Better Auth adapter.
 export async function identityFromEvent(event: H3Event) {
   const config = useRuntimeConfig(event)
   const parsed = identitySecretSchema.safeParse({
@@ -53,15 +28,14 @@ export async function identityFromEvent(event: H3Event) {
   if (!requestHeaders.has('origin'))
     requestHeaders.set('origin', parsed.data.siteUrl)
 
-  const created = persistenceFor(
-    parsed.data.databaseUrl,
-    parsed.data.betterAuthSecret,
-    parsed.data.siteUrl,
-  )
-  const identity = createBetterAuthIdentity(created.auth, {
+  const identity = createBetterAuthIdentity({
+    databaseUrl: parsed.data.databaseUrl,
+    secret: parsed.data.betterAuthSecret,
+    baseURL: parsed.data.siteUrl,
+    migrationsFolder: parsed.data.identityMigrationsFolder,
+  }, {
     requestHeaders,
     cookieHeaders,
-    ensureReady: () => ensureMigrated(parsed.data.databaseUrl, parsed.data.identityMigrationsFolder),
   })
   return { identity, cookieHeaders }
 }
