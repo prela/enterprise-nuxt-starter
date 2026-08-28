@@ -12,7 +12,8 @@ describe('production Coolify webhook curl', () => {
     // GitHub runners ship curl that rejects both flags. -fsS made Production
     // fail before the webhook ran; --fail-with-body already fails on HTTP errors.
     const curlLine = productionWorkflow.split('\n').find(line => /^\s*curl\s/.test(line))
-    expect(curlLine).toMatch(/--fail-with-body/)
-    expect(curlLine).not.toMatch(/(?:^|\s)-f(?:[A-Za-z]|\s|$)/)
+    expect(curlLine).toContain('--fail-with-body')
+    expect(curlLine).not.toContain('-fsS')
+    expect(curlLine).toContain('curl --fail-with-body -sS')
   })
 })
