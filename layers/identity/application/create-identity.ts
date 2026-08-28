@@ -26,7 +26,7 @@ function sessionFromBag(bag: Headers): string | null {
   const inbound = bag.get('cookie')
   const pairs = [
     ...(inbound ? inbound.split(';').map(part => part.trim()) : []),
-    ...bag.getSetCookie().map(cookie => cookie.split(';')[0].trim()),
+    ...bag.getSetCookie().map(cookie => (cookie.split(';')[0] ?? '').trim()),
   ]
   for (const pair of pairs) {
     const eq = pair.indexOf('=')
