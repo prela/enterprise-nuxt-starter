@@ -1,15 +1,13 @@
 import type { IdentityPort } from '../application/create-identity'
-import type { createIdentityAuth } from './auth'
+import type { IdentityPersistenceBoot } from './auth'
 import { APIError } from 'better-auth/api'
 import { registerValidationError } from '../domain/register-input'
 import { routeRequiresPrincipal } from '../domain/route-access'
-
-type IdentityAuth = ReturnType<typeof createIdentityAuth>['auth']
+import { bootIdentityAuth } from './auth'
 
 export interface BetterAuthHttpContext {
   requestHeaders?: Headers
   cookieHeaders?: Headers
-  ensureReady?: () => Promise<void>
 }
 
 function isDuplicateEmailCode(code: string | undefined): boolean {
@@ -40,10 +38,12 @@ function copyCookies(from: Headers, to: Headers | undefined) {
 }
 
 // Production adapter: same IdentityPort as the in-memory fake, Better Auth behind it.
+// Persistence boot (auth-instance cache and migrate-on-demand) lives here, not in the Nitro bind.
 export function createBetterAuthIdentity(
-  auth: IdentityAuth,
+  boot: IdentityPersistenceBoot,
   http: BetterAuthHttpContext = {},
 ): IdentityPort {
+  const { auth, ensureReady } = bootIdentityAuth(boot)
   async function principalFor(session: string | null) {
     if (!session)
       return null
@@ -62,7 +62,7 @@ export function createBetterAuthIdentity(
       if (validation)
         return { ok: false, error: validation }
 
-      await http.ensureReady?.()
+      await ensureReady()
 
       try {
         const response = await auth.api.signUpEmail({
@@ -95,7 +95,7 @@ export function createBetterAuthIdentity(
     },
 
     async authenticate(input) {
-      await http.ensureReady?.()
+      await ensureReady()
       const member = await auth.api.signInEmail({
         body: { email: input.email, password: input.password },
         headers: http.requestHeaders ?? new Headers(),
@@ -123,7 +123,7 @@ export function createBetterAuthIdentity(
     },
 
     async endSession(session) {
-      await http.ensureReady?.()
+      await ensureReady()
       const headers = new Headers(http.requestHeaders)
       if (!headers.has('cookie'))
         headers.set('cookie', `better-auth.session_token=${session}`)
