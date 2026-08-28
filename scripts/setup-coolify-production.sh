@@ -185,55 +185,42 @@ finish() {
 # ──────────────────────────────────────────────────────────────────────────
 
 # Live Coolify secrets must not land in local `.env` (that file is Compose on
-# localhost). `.env.preview` is gitignored via `.env.*`.
-ENV_FILE=".env.preview"
+# localhost). `.env.production` is gitignored via `.env.*`.
+ENV_FILE=".env.production"
 
-TOTAL_STAGES=9
+TOTAL_STAGES=7
 
-banner "Coolify Playground preview"
+banner "Coolify Playground production"
 
-# ── 1. Merge so compose.preview.yaml exists on develop ────────────────────
-stage "Merge the preview PR into develop"
-say "Coolify must track develop. The compose file is not there until this PR merges."
-open_url "https://github.com/prela/enterprise-nuxt-starter/pull/15"
-step "Wait until GitHub check ci is green."
-step "Merge the PR into develop (not main)."
-pause "Press Enter after the PR is merged."
+# ── 1. Release path is a PR into main ────────────────────────────────────
+stage "Release path: develop → main"
+say "Production starts with a release PR, not a direct push and not a develop merge."
+open_url "https://github.com/prela/enterprise-nuxt-starter/settings/branches"
+step "Confirm main requires a pull request (no direct push). develop → main is the release PR."
+step "hotfix/* may also target main; feature branches never do."
+step "This work package itself PRs into develop. The first production tag comes after a later release PR."
+pause "Press Enter after main is protected."
 
-# ── 2. Coolify dashboard ──────────────────────────────────────────────────
+# ── 2. Coolify dashboard ─────────────────────────────────────────────────
 stage "Coolify dashboard URL"
-say "This is the URL you already use to open Coolify (scheme + host, no path)."
+say "Same Coolify instance as preview. Production is a second application, not a second server."
 ask COOLIFY_URL "Paste the Coolify dashboard origin (e.g. https://coolify.example.com):"
 COOLIFY_URL="${COOLIFY_URL%/}"
 write_env COOLIFY_URL "$COOLIFY_URL"
 
-# ── 3. Public HTTPS origin ────────────────────────────────────────────────
-stage "Preview HTTPS origin"
-say "One origin, three places: Coolify domain, NUXT_PUBLIC_SITE_URL, GitHub PREVIEW_URL."
-say "No trailing slash. Custom DNS: A record to the Hetzner VPS, wait until it resolves."
-ask PREVIEW_URL "Paste the preview origin (e.g. https://playground.example.com):"
-PREVIEW_URL="${PREVIEW_URL%/}"
-write_env PREVIEW_URL "$PREVIEW_URL"
+# ── 3. Public HTTPS origin ───────────────────────────────────────────────
+stage "Production HTTPS origin"
+say "One origin, three places: Coolify domain, NUXT_PUBLIC_SITE_URL, GitHub PRODUCTION_URL."
+say "Use a different hostname than preview. No trailing slash."
+ask PRODUCTION_URL "Paste the production origin (e.g. https://playground.example.com):"
+PRODUCTION_URL="${PRODUCTION_URL%/}"
+write_env PRODUCTION_URL "$PRODUCTION_URL"
 
-# ── 4. Secrets for Coolify only ───────────────────────────────────────────
-stage "Generate preview secrets"
-say "These go into Coolify. They are not GitHub Actions secrets."
-note "Written to $ENV_FILE (gitignored). Do not copy them into git."
-POSTGRES_USER="$(_existing POSTGRES_USER || true)"
-POSTGRES_DB="$(_existing POSTGRES_DB || true)"
-POSTGRES_PASSWORD="$(_existing POSTGRES_PASSWORD || true)"
+# ── 4. Identity secret (not preview's) ─────────────────────────────────
+stage "Generate production Identity secret"
+say "A separate Better Auth secret from preview. Production Postgres is this app's volume."
+note "Written to $ENV_FILE (gitignored). Do not copy it into git."
 NUXT_BETTER_AUTH_SECRET="$(_existing NUXT_BETTER_AUTH_SECRET || true)"
-[[ -n "$POSTGRES_USER" ]] || POSTGRES_USER=playground
-[[ -n "$POSTGRES_DB" ]] || POSTGRES_DB=playground
-if [[ -z "$POSTGRES_PASSWORD" ]]; then
-  if command -v openssl >/dev/null 2>&1; then
-    POSTGRES_PASSWORD="$(openssl rand -hex 24)"
-  else
-    ask_secret POSTGRES_PASSWORD "openssl missing; paste a URL-safe POSTGRES_PASSWORD:"
-  fi
-else
-  note "Keeping existing POSTGRES_PASSWORD from $ENV_FILE."
-fi
 if [[ -z "$NUXT_BETTER_AUTH_SECRET" ]]; then
   if command -v openssl >/dev/null 2>&1; then
     NUXT_BETTER_AUTH_SECRET="$(openssl rand -hex 32)"
@@ -243,91 +230,59 @@ if [[ -z "$NUXT_BETTER_AUTH_SECRET" ]]; then
 else
   note "Keeping existing NUXT_BETTER_AUTH_SECRET from $ENV_FILE."
 fi
-write_env POSTGRES_USER "$POSTGRES_USER"
-write_env POSTGRES_DB "$POSTGRES_DB"
-write_env POSTGRES_PASSWORD "$POSTGRES_PASSWORD"
 write_env NUXT_BETTER_AUTH_SECRET "$NUXT_BETTER_AUTH_SECRET"
-say "Copy these into Coolify in the next stages:"
-step "POSTGRES_USER=$POSTGRES_USER"
-step "POSTGRES_DB=$POSTGRES_DB"
-step "POSTGRES_PASSWORD=$POSTGRES_PASSWORD"
+say "Copy these into Coolify in the next stage:"
 step "NUXT_BETTER_AUTH_SECRET=$NUXT_BETTER_AUTH_SECRET"
-step "NUXT_PUBLIC_SITE_URL=$PREVIEW_URL"
+step "NUXT_PUBLIC_SITE_URL=$PRODUCTION_URL"
+step "Do not paste POSTGRES_* or DATABASE_URL; compose uses Coolify SERVICE_USER_POSTGRES / SERVICE_PASSWORD_POSTGRES."
 pause "Press Enter after you have copied them somewhere safe."
 
 # ── 5. Create the Coolify application ─────────────────────────────────────
-stage "Create Coolify application"
-say "Public GitHub repo; one standing Playground from develop (not per-PR previews)."
+stage "Create Coolify production application"
+say "Public GitHub repo; standing Playground from main. Auto Deploy stays off."
 open_url "$COOLIFY_URL"
-step "Open the project (create one if needed)."
+step "Open the project (the same one as preview is fine)."
 step "Click + New, then Public Repository."
 step "Repository URL: https://github.com/prela/enterprise-nuxt-starter"
-step "Branch: develop"
-step "Server: the Hetzner VPS that should serve the Playground."
+step "Branch: main  (not develop)."
+step "Server: the Hetzner VPS that should serve production."
 step "Build pack: Docker Compose."
 step "Base directory: /"
-step "Compose file: /compose.preview.yaml  (not compose.yaml)."
+step "Compose file: /compose.preview.yaml  (same topology as preview; this is a separate application)."
 step "If you see Preview Deployments (per-PR URLs), leave that OFF."
 pause "Press Enter after the application exists and is saved."
 
-# ── 6. Domain + env in Coolify ────────────────────────────────────────────
-stage "Coolify domain and environment"
+# ── 6. Domain, env, Auto Deploy off, webhook ────────────────────────────────
+stage "Domain, env, webhook"
 say "Proxy talks to playground:3000. Postgres must not have a public domain."
 open_url "$COOLIFY_URL"
 step "Open the playground service (not postgres)."
-step "Set Domains to $PREVIEW_URL — if the field needs a container port, use ${PREVIEW_URL}:3000."
+step "Set Domains to $PRODUCTION_URL — if the field needs a container port, use ${PRODUCTION_URL}:3000."
 step "Environment Variables — add exactly these names (mark the secret hidden if the UI can):"
 step "  NUXT_BETTER_AUTH_SECRET"
-step "  NUXT_PUBLIC_SITE_URL=$PREVIEW_URL"
-step "Do not add POSTGRES_* or DATABASE_URL / NUXT_DATABASE_URL. compose.preview.yaml uses Coolify magic SERVICE_USER_POSTGRES / SERVICE_PASSWORD_POSTGRES and hostname postgres."
-step "Leave SERVICE_URL_PLAYGROUND_3000 alone (compose already lists the key)."
-pause "Press Enter after domain and env are saved."
+step "  NUXT_PUBLIC_SITE_URL=$PRODUCTION_URL"
+step "Advanced → Auto Deploy: OFF. Merges to main must not ship; only a SemVer tag does."
+step "Copy the Deploy Webhook URL Coolify shows (application → Webhooks / Deploy)."
+ask_secret COOLIFY_PRODUCTION_WEBHOOK "Paste the Coolify production deploy webhook URL:"
+set_secret COOLIFY_PRODUCTION_WEBHOOK "$COOLIFY_PRODUCTION_WEBHOOK"
+pause "Press Enter after domain, env, Auto Deploy off, and webhook are saved."
 
-# ── 7. Auto-deploy webhook ────────────────────────────────────────────────
-stage "Auto Deploy webhook"
-say "Pushes to develop should rebuild the preview. Official path: webhook on push."
-open_url "https://coolify.io/docs/applications/ci-cd/github/auto-deploy"
-step "In Coolify: application → Advanced → enable Auto Deploy."
-step "Set a GitHub webhook secret (random string). Copy the webhook URL Coolify shows."
-open_url "https://github.com/prela/enterprise-nuxt-starter/settings/hooks"
-step "Add webhook."
-step "Payload URL: the Coolify webhook URL."
-step "Content type: application/json."
-step "Secret: the same Coolify webhook secret."
-step "Enable SSL verification."
-step "Which events: Just the push event."
-step "Active → Add webhook."
-pause "Press Enter after the GitHub webhook is added."
-
-# ── 8. Deploy and click the slice ─────────────────────────────────────────
-stage "Deploy and verify Identity"
-say "First deploy is the cutover. Identity cookies only work if the address bar matches NUXT_PUBLIC_SITE_URL."
-if ! confirm "Deploy the Playground on Coolify now?"; then
-  warn "Skipped deploy. Re-run this wizard when you are ready."
-  finish
-  exit 0
-fi
-open_url "$COOLIFY_URL"
-step "Click Deploy. Wait until postgres and playground are running."
-open_url "$PREVIEW_URL"
-step "Home should name this a Playground, not a Product."
-step "Open /register, create an account, log in, open the protected page, log out."
-step "If /ready is 503, wait for Postgres. If login bounces, the origin does not match NUXT_PUBLIC_SITE_URL."
-pause "Press Enter after register/login works on the preview."
-
-# ── 9. GitHub smoke variable ──────────────────────────────────────────────
-stage "GitHub PREVIEW_URL and smoke"
-say "CI reads vars.PREVIEW_URL (a variable, not a secret). Then re-run Preview smoke."
-write_env PREVIEW_URL "$PREVIEW_URL"
-set_var PREVIEW_URL "$PREVIEW_URL"
+# ── 7. GitHub PRODUCTION_URL and how to tag ───────────────────────────────
+stage "GitHub PRODUCTION_URL and first tag"
+say "CI reads vars.PRODUCTION_URL (a variable, not a secret). Changelog input stays Conventional Commits."
+write_env PRODUCTION_URL "$PRODUCTION_URL"
+set_var PRODUCTION_URL "$PRODUCTION_URL"
 open_url "https://github.com/prela/enterprise-nuxt-starter/settings/variables/actions"
-step "If gh skipped the variable: New repository variable → Name PREVIEW_URL → Value $PREVIEW_URL"
-open_url "https://github.com/prela/enterprise-nuxt-starter/actions/workflows/preview-smoke.yml"
-step "Open the latest Preview smoke run (the merge run may be red) → Re-run jobs."
-step "Wait until the job named smoke is green."
-pause "Press Enter after smoke is green."
+step "If gh skipped the variable: New repository variable → Name PRODUCTION_URL → Value $PRODUCTION_URL"
+say "After this work package is on develop, cut production like this:"
+step "Open a PR develop → main (not a direct push). Wait until check ci is green, then merge."
+step "On main, tag the merge commit immediately: git tag -a v0.y.z -m v0.y.z  (must be origin/main's tip)."
+step "Match v0.y.z to the lockstep version in layers/*/package.json. Do not bump to v1.0.0 yet."
+step "git push origin v0.y.z  — that run deploys Coolify, then pnpm smoke against PRODUCTION_URL."
+step "Commit messages (feat:/fix:/BREAKING CHANGE:) are the changelog; do not invent CalVer or work-package tags."
+pause "Press Enter after PRODUCTION_URL is set. Tag only after a release PR is on main."
 
 # ──────────────────────────────────────────────────────────────────────────
 
 finish
-say "Ticket 14 is live. Next: ./scripts/setup-coolify-production.sh after ticket 15 merges."
+say "Ticket 15 is ready to tag after a develop → main release PR."

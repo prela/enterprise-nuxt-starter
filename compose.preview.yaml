@@ -1,6 +1,7 @@
-# Playground + PostgreSQL on Coolify (preview from `develop`).
-# Coolify's proxy routes to playground:3000. Do not publish host ports: that would
-# expose PostgreSQL and bypass the proxy. Local topology stays in compose.yaml.
+# Playground + PostgreSQL on Coolify (preview from `develop`; production from a
+# SemVer tag on `main`). Same topology, two Coolify applications. Coolify's proxy
+# routes to playground:3000. Do not publish host ports: that would expose PostgreSQL
+# and bypass the proxy. Local topology stays in compose.yaml.
 
 services:
   postgres:

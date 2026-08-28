@@ -1,0 +1,67 @@
+# Deploy the Playground to Coolify production from a SemVer tag on main.
+# Merges to main do not deploy: production is an intentional release (ADR-0004).
+# Coolify auto-deploys branches, not git tags, so this workflow hits the production
+# deploy webhook after lockstep 0.y.z passes, then smokes the Host HTTP contract.
+# The tag must be origin/main's tip so that webhook (branch HEAD) ships the tag.
+
+name: Production
+
+on:
+  push:
+    tags:
+      # First cut: 0.x only. lockstep-semver.ts rejects work package IDs and 1.0.0.
+      - 'v0.*'
+
+permissions:
+  contents: read
+
+jobs:
+  production:
+    name: production
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Require the tag to be the current tip of main
+        run: |
+          git fetch origin main
+          main_tip=$(git rev-parse origin/main)
+          if [ "$main_tip" != "$GITHUB_SHA" ]; then
+            echo "Tag must be the current tip of main so Coolify's branch deploy matches the tag."
+            echo "tag $GITHUB_SHA  main $main_tip"
+            exit 1
+          fi
+
+      - uses: pnpm/action-setup@v4
+        with:
+          # Same pnpm as the Playground Dockerfile so CI and Compose do not drift.
+          version: 11.18.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install lockfile dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lockstep 0.y.z SemVer
+        run: pnpm lockstep --tag "${GITHUB_REF_NAME}"
+
+      - name: Deploy Playground on Coolify
+        env:
+          COOLIFY_PRODUCTION_WEBHOOK: ${{ secrets.COOLIFY_PRODUCTION_WEBHOOK }}
+        run: |
+          if [ -z "$COOLIFY_PRODUCTION_WEBHOOK" ]; then
+            echo "Set secret COOLIFY_PRODUCTION_WEBHOOK to the Coolify production deploy webhook."
+            exit 1
+          fi
+          curl --fail-with-body -fsS -X GET "$COOLIFY_PRODUCTION_WEBHOOK"
+
+      - name: Smoke Playground production
+        env:
+          PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+        run: pnpm smoke --wait-ms 600000 --poll-ms 10000

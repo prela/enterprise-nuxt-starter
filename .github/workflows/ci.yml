@@ -1,6 +1,7 @@
-# PRs into develop must stay green: lint, typecheck, Identity-port/Host HTTP tests
+# PRs into develop or main must stay green: lint, typecheck, Identity-port/Host HTTP tests
 # with coverage gates (80% global / 95% domain and application-service), and
-# Playwright at the Host HTTP/UI seam. A red slice cannot merge.
+# Playwright at the Host HTTP/UI seam. A red slice cannot merge. Release PRs
+# are develop → main; the same `ci` check must be green there too.
 
 name: CI
 
@@ -8,6 +9,7 @@ on:
   pull_request:
     branches:
       - develop
+      - main
   # Agent/GitHub-App PR events often never start a run, so the required `ci` check
   # stays Expected. Push on the feature branch still reports `ci` on the head SHA.
   push:

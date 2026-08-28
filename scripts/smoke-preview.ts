@@ -2,6 +2,9 @@ import { resolve } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 
+// Host HTTP smoke for preview (`PREVIEW_URL`) and production (`PRODUCTION_URL`).
+// Same contract: health, readiness, baseline headers, CSP report-only.
+
 export interface SmokeResult {
   ok: boolean
   failures: string[]
@@ -104,9 +107,10 @@ function argValue(argv: string[], flag: string): string | undefined {
 }
 
 export async function runSmokeCli(argv: string[], env: Record<string, string | undefined>): Promise<number> {
-  const url = argValue(argv, '--url') ?? env.PREVIEW_URL
+  // Production and preview are the same Host HTTP contract; only the origin differs.
+  const url = argValue(argv, '--url') ?? env.PRODUCTION_URL ?? env.PREVIEW_URL
   if (!url) {
-    console.error('smoke: set PREVIEW_URL or pass --url <origin>')
+    console.error('smoke: set PRODUCTION_URL or PREVIEW_URL or pass --url <origin>')
     return 1
   }
   const waitMs = Number(argValue(argv, '--wait-ms') ?? 0)
