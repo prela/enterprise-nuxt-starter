@@ -39,6 +39,8 @@ export default defineNuxtConfig({
         '/docs',
         '/docs/getting-started',
         '/docs/layers',
+        // Locale chrome links to `/hr`; prerender the redirect so link inspection is not 404.
+        '/hr',
         '/hr/docs',
         '/hr/docs/getting-started',
         '/hr/docs/layers',

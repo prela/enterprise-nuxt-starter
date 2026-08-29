@@ -1,4 +1,4 @@
-import { expect, test } from '@nuxt/test-utils/playwright'
+import { expect, test } from './nuxt-test'
 
 // Seam: Host HTTP/UI. The Identity slice is observed as a visitor's browser
 // would see it — not via fetch(), port imports, or Better Auth types.

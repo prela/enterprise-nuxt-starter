@@ -1,4 +1,4 @@
-import { expect, test } from '@nuxt/test-utils/playwright'
+import { expect, test } from './nuxt-test'
 
 // Seam: Host HTTP/UI. Docs proof is observed as a visitor's browser would see it —
 // not via Content queries, vue-i18n internals, or Nuxt SEO option objects.
