@@ -42,7 +42,6 @@ describe('public Nuxt Layer interface fence', () => {
     expect(result.messages.some(message => /Tier|deep import|Public Layer/i.test(message.message))).toBe(true)
   })
 
-
   it('fails lint on a deep import of i18n Layer Tiers', async () => {
     process.env.CI = 'true'
     const eslint = new ESLint({ cwd: repoRoot })
