@@ -1,0 +1,14 @@
+{
+  "name": "@starter/i18n",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "description": "i18n Nuxt Layer: English default locale and prefix_except_default URLs. Hosts add further locales.",
+  "exports": {
+    ".": "./nuxt.config.ts"
+  },
+  "main": "./nuxt.config.ts",
+  "dependencies": {
+    "@nuxtjs/i18n": "^10.6.0"
+  }
+}

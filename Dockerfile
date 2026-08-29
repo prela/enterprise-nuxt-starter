@@ -6,6 +6,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY layers/core/package.json layers/core/package.json
 COPY layers/ui/package.json layers/ui/package.json
 COPY layers/identity/package.json layers/identity/package.json
+COPY layers/i18n/package.json layers/i18n/package.json
 RUN pnpm install --frozen-lockfile
 
 COPY . .
