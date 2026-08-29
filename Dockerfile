@@ -7,6 +7,7 @@ COPY layers/core/package.json layers/core/package.json
 COPY layers/ui/package.json layers/ui/package.json
 COPY layers/identity/package.json layers/identity/package.json
 COPY layers/content/package.json layers/content/package.json
+COPY layers/seo/package.json layers/seo/package.json
 RUN pnpm install --frozen-lockfile
 
 COPY . .

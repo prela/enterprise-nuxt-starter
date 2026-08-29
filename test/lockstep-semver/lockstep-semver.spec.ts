@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { checkLockstepSemver } from '../../scripts/lockstep-semver'
 
-const layerManifests = ['core', 'ui', 'identity', 'content'].map((name) => {
+const layerManifests = ['core', 'ui', 'identity', 'content', 'seo'].map((name) => {
   const path = fileURLToPath(new URL(`../../layers/${name}/package.json`, import.meta.url))
   return JSON.parse(readFileSync(path, 'utf8')) as { name: string, version: string }
 })
@@ -70,6 +70,7 @@ describe('lockstep 0.y.z SemVer', () => {
     expect(result.failures).toEqual([])
     expect(result.ok).toBe(true)
     expect(layerManifests.map(pkg => pkg.version)).toEqual([
+      layerManifests[0]?.version,
       layerManifests[0]?.version,
       layerManifests[0]?.version,
       layerManifests[0]?.version,
