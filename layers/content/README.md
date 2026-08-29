@@ -38,3 +38,5 @@ Query with Nuxt Content APIs. Do not wrap them until a Product needs a Public La
 ## Runtime
 
 The Layer indexes markdown with SQLite via Node 22 `node:sqlite`. Hosts on another runtime may set `content.experimental.sqliteConnector`. Content does not add a PostgreSQL schema; Core still owns the database URL.
+
+The Layer’s query API is a same-origin POST at `/__nuxt_content/**`. Core CSRF does not apply to that path (it is not an Identity mutation).

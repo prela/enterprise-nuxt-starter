@@ -9,4 +9,8 @@ export default defineNuxtConfig({
       sqliteConnector: 'native',
     },
   },
+  // Content’s query API is a same-origin POST. Core CSRF must not treat it as an Identity mutation.
+  routeRules: {
+    '/__nuxt_content/**': { csurf: false } as never,
+  },
 })
