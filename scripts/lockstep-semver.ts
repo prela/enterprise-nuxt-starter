@@ -46,7 +46,7 @@ export function checkLockstepSemver(input: LockstepInput): LockstepResult {
 
 export function layerVersionsFromRepo(rootDir: string): Record<string, string> {
   const versions: Record<string, string> = {}
-  for (const name of ['core', 'ui', 'identity', 'seo']) {
+  for (const name of ['core', 'ui', 'identity', 'content', 'seo']) {
     const pkg = JSON.parse(readFileSync(join(rootDir, 'layers', name, 'package.json'), 'utf8')) as {
       name: string
       version: string
