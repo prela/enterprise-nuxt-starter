@@ -19,6 +19,8 @@ export default defineConfig<ConfigOptions>({
       browser: true,
       server: true,
       env: playgroundEnv,
+      // Mirrored on the `_nuxtHooks` fixture in test/host-ui/nuxt-test.ts — this
+      // option does not raise @nuxt/test-utils’ hardcoded 60s Playwright timeout.
       setupTimeout: 180_000,
     },
     ...devices['Desktop Chrome'],

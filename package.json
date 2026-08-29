@@ -16,8 +16,11 @@
     "lockstep": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/lockstep-semver.ts"
   },
   "dependencies": {
+    "@starter/content": "workspace:*",
     "@starter/core": "workspace:*",
+    "@starter/i18n": "workspace:*",
     "@starter/identity": "workspace:*",
+    "@starter/seo": "workspace:*",
     "@starter/ui": "workspace:*",
     "nuxt": "^4.5.2",
     "vue": "^3.5.41",

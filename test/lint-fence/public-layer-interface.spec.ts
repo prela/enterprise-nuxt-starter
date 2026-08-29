@@ -42,6 +42,18 @@ describe('public Nuxt Layer interface fence', () => {
     expect(result.messages.some(message => /Tier|deep import|Public Layer/i.test(message.message))).toBe(true)
   })
 
+  it('fails lint on a deep import of i18n Layer Tiers', async () => {
+    process.env.CI = 'true'
+    const eslint = new ESLint({ cwd: repoRoot })
+    const [result] = await eslint.lintText(
+      `import i18nConfig from '../../layers/i18n/nuxt.config'\n`,
+      { filePath: `${repoRoot}/app/forbidden-i18n-tier-import.ts` },
+    )
+
+    expect(result.errorCount).toBeGreaterThan(0)
+    expect(result.messages.some(message => /Tier|deep import|Public Layer/i.test(message.message))).toBe(true)
+  })
+
   it('fails lint on a deep import of Content Layer Tiers', async () => {
     process.env.CI = 'true'
     const eslint = new ESLint({ cwd: repoRoot })

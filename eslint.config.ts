@@ -39,6 +39,9 @@ export default antfu(
               '@starter/identity/infrastructure/**',
               '#identity',
               '#identity/**',
+              '**/layers/i18n/**',
+              '@starter/i18n/*',
+              '@starter/i18n/**',
               '**/layers/content/**',
               '@starter/content/*',
               '@starter/content/**',
@@ -48,6 +51,7 @@ export default antfu(
               '#layers/core/**',
               '#layers/ui/**',
               '#layers/identity/**',
+              '#layers/i18n/**',
               '#layers/content/**',
               '#layers/seo/**',
             ],
@@ -58,7 +62,7 @@ export default antfu(
     },
   },
   {
-    // Core Tiers may import within Core; they still must not reach into UI, Identity, content, or SEO.
+    // Core Tiers may import within Core; they still must not reach into UI, Identity, i18n, content, or SEO.
     files: ['layers/core/**/*.{js,ts,vue}'],
     rules: {
       'no-restricted-imports': ['error', {
@@ -77,6 +81,9 @@ export default antfu(
               '@starter/identity/infrastructure/**',
               '#identity',
               '#identity/**',
+              '**/layers/i18n/**',
+              '@starter/i18n/*',
+              '@starter/i18n/**',
               '**/layers/content/**',
               '@starter/content/*',
               '@starter/content/**',
@@ -86,6 +93,7 @@ export default antfu(
               '#layers/core/**',
               '#layers/ui/**',
               '#layers/identity/**',
+              '#layers/i18n/**',
               '#layers/content/**',
               '#layers/seo/**',
             ],
@@ -96,7 +104,7 @@ export default antfu(
     },
   },
   {
-    // UI Tiers may import within UI; they still must not reach into Core, Identity, content, or SEO.
+    // UI Tiers may import within UI; they still must not reach into Core, Identity, i18n, content, or SEO.
     files: ['layers/ui/**/*.{js,ts,vue}'],
     rules: {
       'no-restricted-imports': ['error', {
@@ -106,6 +114,84 @@ export default antfu(
               '**/layers/core/**',
               '@starter/core/*',
               '@starter/core/**',
+              '**/layers/identity/**',
+              '@starter/identity/domain',
+              '@starter/identity/domain/**',
+              '@starter/identity/application',
+              '@starter/identity/application/**',
+              '@starter/identity/infrastructure',
+              '@starter/identity/infrastructure/**',
+              '#identity',
+              '#identity/**',
+              '**/layers/i18n/**',
+              '@starter/i18n/*',
+              '@starter/i18n/**',
+              '**/layers/content/**',
+              '@starter/content/*',
+              '@starter/content/**',
+              '**/layers/seo/**',
+              '@starter/seo/*',
+              '@starter/seo/**',
+              '#layers/core/**',
+              '#layers/ui/**',
+              '#layers/identity/**',
+              '#layers/i18n/**',
+              '#layers/content/**',
+              '#layers/seo/**',
+            ],
+            message: 'Deep imports of another Nuxt Layer’s Tiers are forbidden. Use the Public Layer interface.',
+          },
+        ],
+      }],
+    },
+  },
+  {
+    // Identity Tiers may import within Identity; they still must not reach into Core, UI, i18n, content, or SEO.
+    files: ['layers/identity/**/*.{js,ts,vue}'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          {
+            group: [
+              '**/layers/core/**',
+              '@starter/core/*',
+              '@starter/core/**',
+              '**/layers/ui/**',
+              '@starter/ui/*',
+              '@starter/ui/**',
+              '**/layers/i18n/**',
+              '@starter/i18n/*',
+              '@starter/i18n/**',
+              '**/layers/content/**',
+              '@starter/content/*',
+              '@starter/content/**',
+              '**/layers/seo/**',
+              '@starter/seo/*',
+              '@starter/seo/**',
+              '#layers/i18n/**',
+              '#layers/content/**',
+              '#layers/seo/**',
+            ],
+            message: 'Deep imports of another Nuxt Layer’s Tiers are forbidden. Use the Public Layer interface.',
+          },
+        ],
+      }],
+    },
+  },
+  {
+    // i18n Tiers may import within i18n; they still must not reach into Core, UI, Identity, content, or SEO.
+    files: ['layers/i18n/**/*.{js,ts,vue}'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          {
+            group: [
+              '**/layers/core/**',
+              '@starter/core/*',
+              '@starter/core/**',
+              '**/layers/ui/**',
+              '@starter/ui/*',
+              '@starter/ui/**',
               '**/layers/identity/**',
               '@starter/identity/domain',
               '@starter/identity/domain/**',
@@ -134,36 +220,7 @@ export default antfu(
     },
   },
   {
-    // Identity Tiers may import within Identity; they still must not reach into Core, UI, content, or SEO.
-    files: ['layers/identity/**/*.{js,ts,vue}'],
-    rules: {
-      'no-restricted-imports': ['error', {
-        patterns: [
-          {
-            group: [
-              '**/layers/core/**',
-              '@starter/core/*',
-              '@starter/core/**',
-              '**/layers/ui/**',
-              '@starter/ui/*',
-              '@starter/ui/**',
-              '**/layers/content/**',
-              '@starter/content/*',
-              '@starter/content/**',
-              '**/layers/seo/**',
-              '@starter/seo/*',
-              '@starter/seo/**',
-              '#layers/content/**',
-              '#layers/seo/**',
-            ],
-            message: 'Deep imports of another Nuxt Layer’s Tiers are forbidden. Use the Public Layer interface.',
-          },
-        ],
-      }],
-    },
-  },
-  {
-    // Content Tiers may import within content; they still must not reach into Core, UI, Identity, or SEO.
+    // Content Tiers may import within content; they still must not reach into Core, UI, Identity, i18n, or SEO.
     files: ['layers/content/**/*.{js,ts,vue}'],
     rules: {
       'no-restricted-imports': ['error', {
@@ -185,12 +242,16 @@ export default antfu(
               '@starter/identity/infrastructure/**',
               '#identity',
               '#identity/**',
+              '**/layers/i18n/**',
+              '@starter/i18n/*',
+              '@starter/i18n/**',
               '**/layers/seo/**',
               '@starter/seo/*',
               '@starter/seo/**',
               '#layers/core/**',
               '#layers/ui/**',
               '#layers/identity/**',
+              '#layers/i18n/**',
               '#layers/seo/**',
             ],
             message: 'Deep imports of another Nuxt Layer’s Tiers are forbidden. Use the Public Layer interface.',
@@ -200,7 +261,7 @@ export default antfu(
     },
   },
   {
-    // SEO Tiers may import within SEO; they still must not reach into Core, UI, Identity, or content.
+    // SEO Tiers may import within SEO; they still must not reach into Core, UI, Identity, i18n, or content.
     files: ['layers/seo/**/*.{js,ts,vue}'],
     rules: {
       'no-restricted-imports': ['error', {
@@ -222,12 +283,16 @@ export default antfu(
               '@starter/identity/infrastructure/**',
               '#identity',
               '#identity/**',
+              '**/layers/i18n/**',
+              '@starter/i18n/*',
+              '@starter/i18n/**',
               '**/layers/content/**',
               '@starter/content/*',
               '@starter/content/**',
               '#layers/core/**',
               '#layers/ui/**',
               '#layers/identity/**',
+              '#layers/i18n/**',
               '#layers/content/**',
             ],
             message: 'Deep imports of another Nuxt Layer’s Tiers are forbidden. Use the Public Layer interface.',
