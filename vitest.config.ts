@@ -34,8 +34,10 @@ export default defineConfig({
       exclude: [
         // Generated types and Layer wiring: out of the 95% gate, and not in the
         // 80% denominator (configs are not executed by in-process port tests).
+        // content.config.ts is the docs collection contract, not application logic.
         '**/*.d.ts',
         '**/nuxt.config.ts',
+        '**/content.config.ts',
         '**/drizzle.config.ts',
         // Nitro child + adapters: Host HTTP tests them at the HTTP seam, not here.
         'layers/**/infrastructure/**',
