@@ -17,8 +17,12 @@ The in-repo application used to prove Starter Layers before a real Product exist
 _Avoid_: demo, example app, sandbox
 
 **Host**:
-The Nuxt application at the repository root that `extends` the Nuxt Layers. During v1, the Host is the Playground.
+A Nuxt application that `extends` the Nuxt Layers. The deployable Host is the Playground at the repository root.
 _Avoid_: app (unqualified), root app
+
+**Omit fixture**:
+A CI-only Host that extends a subset of Nuxt Layers to prove a Product can take or omit them. It is never deployed.
+_Avoid_: second Playground, demo Host, sandbox
 
 **Work package**:
 The smallest planned unit of work: one feature branch and one PR into `develop`. IDs follow the v1 WBS (`0.1`, `1.1`, `3.3`, …) and are not SemVer tags.
