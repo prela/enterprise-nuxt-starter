@@ -6,7 +6,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-human
+**Status:** resolved
 
 - [x] `@starter/content` is a Nuxt Layer with a documented Public Layer interface (`extends` plus `docs` collection schema)
 - [x] The Layer owns the `docs` Zod schema; it does not ship markdown
@@ -17,3 +17,7 @@
 - [x] Deep imports of this Layer’s Tiers fail the existing Public Layer interface lint fence
 - [x] Playground Host `extends` list is unchanged (no visitor-facing docs yet)
 - [x] Lint, typecheck, and existing Identity tests stay green
+
+## Answer
+
+A Product can `extends` `@starter/content` and get a `docs` collection schema. Markdown stays in the Host; this Nuxt Layer ships no proof articles and no `blog` collection. The documented read path is Nuxt Content queries (collection, navigation, surroundings).

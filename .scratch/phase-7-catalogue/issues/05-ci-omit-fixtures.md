@@ -6,7 +6,7 @@
 
 **Blocked by:** 04 Playground extends catalogue Layers and proves docs (7.4)
 
-**Status:** ready-for-human
+**Status:** resolved
 
 - [x] Docs-shaped omit fixture `extends` Core, UI, content, seo, and i18n only; it boots in CI; `/` is 200; Identity routes are absent
 - [x] PMS-shaped omit fixture `extends` Core, UI, and Identity only; it boots in CI; `/login` is 200; `/docs` is absent
@@ -14,3 +14,7 @@
 - [x] Neither fixture is deployed (not a second Playground; ADR-0007)
 - [x] TDD: failing fixture-boot tests before fixture configs
 - [x] Playground remain extend-all; existing Identity E2E and coverage gates stay green
+
+## Answer
+
+CI boots two Omit fixtures that are never deployed: a docs-shaped Host (Core, UI, content, seo, i18n — no Identity) and a PMS-shaped Host (Core, UI, Identity — no catalogue Layers). Both still satisfy Core’s PostgreSQL boot contract. The Playground remains the only deployed Host.

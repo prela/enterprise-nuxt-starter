@@ -4,7 +4,7 @@
 
 **Blocked by:** 03 Root toolchain
 
-**Status:** claimed
+**Status:** resolved
 
 - [x] Host extends a Core Nuxt Layer with a documented Public Layer interface and its own package manifest
 - [x] Health endpoint returns success and must not be cached
@@ -22,3 +22,7 @@
 - Boot validates `NUXT_PUBLIC_SITE_URL` with Zod in a Nitro plugin (missing or non-URL fails closed). Persistence checks are not in this work package.
 - `nuxt-security` is on Core; CSP is `Content-Security-Policy-Report-Only`.
 - ESLint `no-restricted-imports` blocks Host (and later Nuxt Layers) from importing `layers/core` Tiers; Core files are exempt so intra-Core imports stay legal.
+
+## Answer
+
+The Playground Host extends `@starter/core`. Uncached `/health` and `/ready` return JSON; missing or invalid required env fails closed; responses carry baseline security headers with CSP report-only. Deep imports of Core Tiers fail lint. Verified at the Host HTTP seam.

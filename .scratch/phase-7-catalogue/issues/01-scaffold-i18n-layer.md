@@ -6,7 +6,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-human
+**Status:** resolved
 
 - [x] `@starter/i18n` is a Nuxt Layer with a documented Public Layer interface (`extends` plus locale defaults)
 - [x] Default locale is English; URL strategy is `prefix_except_default`; Hosts add extra locales rather than the Layer hard-coding them
@@ -16,3 +16,7 @@
 - [x] Deep imports of this Layer’s Tiers fail the existing Public Layer interface lint fence
 - [x] Playground Host `extends` list is unchanged (no visitor-facing i18n yet)
 - [x] Lint, typecheck, and existing Identity tests stay green
+
+## Answer
+
+A Product can `extends` `@starter/i18n` and get English as the default locale with `prefix_except_default`. Hosts add extra locales (the Playground adds `hr` in 7.4). Identity does not depend on this Nuxt Layer. Public Layer interface is documented; deep imports fail the existing lint fence.

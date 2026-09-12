@@ -4,7 +4,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** claimed
+**Status:** resolved
 
 - [x] Bind does not own auth-instance cache or migrate-on-demand
 - [x] Better Auth adapter owns persistence boot for its engine
@@ -20,3 +20,7 @@
 - Better Auth adapter owns persistence boot: `bootIdentityAuth` in `layers/identity/infrastructure/auth.ts` caches one engine per database URL and migrates on register/authenticate/endSession (not on construction).
 - Port tests, Host HTTP (including `/health`), lint, typecheck, and coverage gates passed. Playwright Identity E2E did not launch in this environment (`libnspr4.so` missing for Chromium); Host HTTP covers the same register/login/logout/`/protected` outcomes.
 - Public Layer interface unchanged: port still returns a session token; README, error modes, and cookie-bag contract are ticket 02.
+
+## Answer
+
+Nitro Identity wiring is a small bind: parse config, attach this request’s cookies, apply outbound Set-Cookie. Auth-instance cache and migrate-on-demand live in the Better Auth adapter. Playground register, login, logout, and `/protected` keep the same outcomes. The Public Layer interface did not change in this ticket.

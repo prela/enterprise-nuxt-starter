@@ -4,7 +4,7 @@
 
 **Blocked by:** 05 Playground home + UI shell; 06 Compose — Playground + PostgreSQL; 07 Identity port with fake adapter
 
-**Status:** claimed
+**Status:** resolved
 
 - [x] Visitor can register with email and password; first paint is a real SSR form
 - [x] Invalid email and weak password show field errors; duplicate email fails clearly
