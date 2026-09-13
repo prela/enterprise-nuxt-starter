@@ -1,6 +1,6 @@
 # Smoke the Coolify Playground preview after a merge to develop.
 # Coolify auto-deploys develop; this job only observes the Host HTTP contract
-# (health, readiness, baseline headers, CSP report-only).
+# (health, readiness, baseline headers, CSP report-only, Catalogue Layer paths).
 
 name: Preview smoke
 

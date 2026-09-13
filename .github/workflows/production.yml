@@ -1,7 +1,8 @@
 # Deploy the Playground to Coolify production from a SemVer tag on main.
 # Merges to main do not deploy: production is an intentional release (ADR-0004).
 # Coolify auto-deploys branches, not git tags, so this workflow hits the production
-# deploy webhook after lockstep 0.y.z passes, then smokes the Host HTTP contract.
+# deploy webhook after lockstep 0.y.z passes, then smokes the same Host HTTP contract
+# as preview (including Catalogue Layer paths).
 # The tag must be origin/main's tip so that webhook (branch HEAD) ships the tag.
 
 name: Production
