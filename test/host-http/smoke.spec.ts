@@ -99,7 +99,7 @@ async function listenFixtureHost(handler: (req: IncomingMessage, res: ServerResp
   }
 }
 
-describe('Playground Host smoke (preview and production)', () => {
+describe('playground Host smoke (preview and production)', () => {
   it('fails when health is not a live JSON 200', async () => {
     const fixture = await listenFixtureHost((_req, res) => {
       res.writeHead(503, { 'content-type': 'text/plain' })
