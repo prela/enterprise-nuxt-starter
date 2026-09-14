@@ -1,7 +1,7 @@
 {
   "name": "@starter/identity",
   "type": "module",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Identity Nuxt Layer: who a user is and whether they may access a route. Hosted identity providers are adapters, not this interface.",
   "exports": {

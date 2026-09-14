@@ -18,18 +18,19 @@ Work is Domain-Driven (ubiquitous language, Tiers, ports) and Test-Driven (red�
 
 ## Vocabulary
 
-Use `CONTEXT.md` as the glossary. In particular: **Product** not “service”; **Nuxt Layer** vs **Tier**; **Identity** not “auth module”; **Application service** for domain logic; **Host** / **Playground**; **Work package** (not a SemVer tag); **Bible** for this file.
+Use `CONTEXT.md` as the glossary. In particular: **Product** not “service”; **Nuxt Layer** vs **Tier**; **Catalogue Layer**; **Identity** not “auth module”; **Application service** for domain logic; **Host** / **Playground**; **Work package** (not a SemVer tag); **Bible** for this file.
 
 ## Tech Stack
 
 - **Language:** TypeScript only (strict). Vue SFC: `<script setup lang="ts">`.
 - **Framework:** Nuxt 4, Vite, unjs / Nitro.
 - **v1 Nuxt Layers:** `core`, `ui`, `identity`.
+- **Current Catalogue Layers:** `i18n`, `content`, `seo`. Fonts, image, and scripts are not Catalogue Layers.
 - **v1 modules:** Nuxt UI, VueUse, Pinia, Zod, Better Auth (Identity adapter), nuxt-security (baseline headers).
 - **Data:** PostgreSQL via Drizzle ORM. Not MySQL.
 - **Tooling:** pnpm, Antfu ESLint, Vitest, Playwright, Docker, GitHub Actions, Coolify on Hetzner VPS.
 
-Post-v1 catalogue (not v1): Nuxt SEO, Nuxt Content, i18n, `@nuxt/image` / `@nuxt/fonts` / `@nuxt/scripts` as a full suite.
+Post-v1 catalogue still outstanding: `@nuxt/image` / `@nuxt/fonts` / `@nuxt/scripts` as a full suite. Not Layers in this Starter.
 
 ## Patterns
 
@@ -107,13 +108,16 @@ See `docs/adr/0007-host-at-repo-root.md`.
   layers/core/
   layers/ui/
   layers/identity/
+  layers/i18n/
+  layers/content/
+  layers/seo/
   project.md
   CONTEXT.md
   docs/adr/
   .scratch/            # tickets (one work package each)
 ```
 
-Root `nuxt.config.ts` `extends` the three Nuxt Layers. Each Layer has its own `package.json`.
+Root `nuxt.config.ts` `extends` all six Nuxt Layers. Each Layer has its own `package.json`.
 
 ## Public Layer interface
 
@@ -175,7 +179,9 @@ Work packages are the unit of a feature branch (`feature/0.1-init-git`). A phase
 | **5.2** | Coverage gates 80% / 95% | 5.1 |
 | **6.1** | Coolify preview from `develop` | 4.3, 5.1 |
 | **6.2** | Production deploy from SemVer tag on `main` | 6.1 |
-| **7+** | Not v1: i18n, Content, SEO suite, image/fonts programme, first Product repo | v1 done |
+| **7+** | Catalogue Layer proof `7.1`–`7.5` done. Still not: image/fonts/scripts, npm publish, a docs Product | v1 done |
+| **7.6** | Deployed-origin catalogue Host HTTP smoke (preview and production) | 7.4 |
+| **7.7** | Lockstep `0.1.0` and honest docs (Bible, README, glossary) | 7.5, 7.6 |
 
 Parallelism: **2.x** and **3.1** after **1.1**; **3.4** after **3.1** without waiting for Better Auth; **5.1** cannot go green until **4.4**.
 
@@ -229,7 +235,7 @@ export default defineNuxtConfig({
 ### Testing and CI/CD (TDD)
 
 - Red–green–refactor. Unit tests for composables and application services, integration tests around server routes, E2E for critical flows.
-- CI: lint, typecheck, unit, e2e. Preview deploys with smoke checks for headers, CSP, and caching.
+- CI: lint, typecheck, unit, e2e. Preview and production smoke assert catalogue Host HTTP on deployed origins, not only headers, CSP, and caching.
 
 ### Observability and resilience
 

@@ -1,7 +1,7 @@
 {
   "name": "@starter/ui",
   "type": "module",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "UI Nuxt Layer: Nuxt UI chrome, color mode, and default/auth/error layouts for the Playground and for Products.",
   "exports": {

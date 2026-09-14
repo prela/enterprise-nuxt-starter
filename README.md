@@ -1,6 +1,6 @@
 # Enterprise Nuxt Starter
 
-Playground Host at the repository root. It `extends` the Core, UI, and Identity Nuxt Layers.
+Playground Host at the repository root. It `extends` six Nuxt Layers: Core, UI, Identity, i18n, content, and seo.
 
 ## Local topology (Compose)
 
@@ -50,7 +50,7 @@ pnpm smoke --url https://preview.example.com
 
 ## Coolify production (SemVer tag on `main`)
 
-Production is an intentional release: a PR `develop` → `main`, then a `v0.y.z` tag. Merges to `main` do not deploy. All three Nuxt Layers stay on one lockstep `0.y.z` version (not `1.0.0` until a production Product depends on the Starter). Work package IDs (`0.1`, `6.2`) are not tags. Conventional Commits (`feat:`, `fix:`, `BREAKING CHANGE:`) are the changelog.
+Production is an intentional release: a PR `develop` → `main`, then a `v0.y.z` tag. Merges to `main` do not deploy. All six Nuxt Layers stay on one lockstep `0.y.z` version (not `1.0.0` until a production Product depends on the Starter). Work package IDs (`0.1`, `6.2`) are not tags. Conventional Commits (`feat:`, `fix:`, `BREAKING CHANGE:`) are the changelog.
 
 After preview is live, run:
 
@@ -65,7 +65,7 @@ After preview is live, run:
 5. Tag the merge commit `v0.y.z` matching `layers/*/package.json`, then `git push origin v0.y.z`. GitHub Actions deploys Coolify and runs `pnpm smoke` against `PRODUCTION_URL`.
 
 ```bash
-pnpm lockstep --tag v0.0.0
+pnpm lockstep --tag v0.1.0
 pnpm smoke --url https://playground.example.com
 ```
 
