@@ -78,4 +78,14 @@ describe('lockstep 0.y.z SemVer', () => {
       layerManifests[0]?.version,
     ])
   })
+
+  it('accepts tag v0.1.0 for the current lockstep Layer manifests', () => {
+    // Cookie-bag Identity is the 0.Y public-interface break (ADR-0005, ADR-0010). Catalogue Layers ride the same lockstep version; adding them is not itself a 0.Y (ADR-0011).
+    const versions = Object.fromEntries(layerManifests.map(pkg => [pkg.name, pkg.version]))
+    const result = checkLockstepSemver({ versions, tag: 'v0.1.0' })
+
+    expect(layerManifests.every(pkg => pkg.version === '0.1.0')).toBe(true)
+    expect(result.failures).toEqual([])
+    expect(result.ok).toBe(true)
+  })
 })

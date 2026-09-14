@@ -1,6 +1,6 @@
 # Phase 7 catalogue Layers
 
-Status: ready-for-agent
+Status: resolved
 
 ## Problem Statement
 

@@ -32,6 +32,10 @@ _Avoid_: task, phase (a phase groups work packages)
 A distributable Nuxt `extends` package that a Product can take or omit.
 _Avoid_: layer (unqualified), module, package
 
+**Catalogue Layer**:
+A Nuxt Layer a docs Product takes and a PMS Product omits: i18n, content, or seo. Fonts, image, and scripts are not Catalogue Layers.
+_Avoid_: catalogue (unqualified), CMS layer, marketing layer
+
 **Tier**:
 A code seam inside a Nuxt Layer or Product: presentation, application, domain, or infrastructure.
 _Avoid_: layer (when meaning these four), level

@@ -4,7 +4,7 @@
 
 **Blocked by:** 04 Core Host — health, env, headers
 
-**Status:** claimed
+**Status:** resolved
 
 - [x] Identity Nuxt Layer exists with a documented Public Layer interface (the port) and its own package manifest
 - [x] In-memory fake adapter satisfies the port; no Better Auth, Clerk, Auth0, or Supabase Auth
@@ -22,3 +22,7 @@
 - Domain lives under `layers/identity/domain/`; application service under `layers/identity/application/` for the later 95% coverage gate.
 - ESLint fence blocks Host/Core/UI deep imports of Identity Tiers; Identity Tiers may import within Identity. Lint fixture covers an Identity Tier import from `app/`.
 - Host does not `extends` Identity and adds no screens. Root depends on `@starter/identity` so port tests can import the public entrypoint. A Product omits the Layer by not depending on the package.
+
+## Answer
+
+The Identity Nuxt Layer’s Public Layer interface is the port (`@starter/identity/port`). An in-memory fake satisfies register, authenticate, end session, current principal, and may-access-route. Port tests cover happy paths and the error modes; they do not depend on Better Auth. A Product omits this Layer by not depending on the package.

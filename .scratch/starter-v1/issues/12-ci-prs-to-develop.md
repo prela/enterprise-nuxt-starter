@@ -4,7 +4,7 @@
 
 **Blocked by:** 02 GitHub remote; 11 Log out
 
-**Status:** claimed
+**Status:** resolved
 
 - [x] GitHub Actions on PRs to `develop` run lint, typecheck, unit tests at the Identity port, and Playwright at the Host HTTP/UI seam
 - [x] A failing job blocks merge
